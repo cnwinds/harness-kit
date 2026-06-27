@@ -1,0 +1,19 @@
+{
+  "name": "@harnesskit/example-minimal-server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.0",
+    "@harnesskit/server": "0.1.0",
+    "fastify": "^5.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "typescript": "^6.0.0"
+  }
+}

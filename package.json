@@ -1,0 +1,21 @@
+{
+  "name": "harness-kit",
+  "private": true,
+  "version": "0.1.0",
+  "description": "One-line harness chat integration — Turn runtime, SSE protocol, LLM truncated UI",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "dev:minimal-server": "npm --workspace @harnesskit/example-minimal-server run dev",
+    "dev:minimal-react": "npm --workspace @harnesskit/example-minimal-react run dev"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT"
+}
