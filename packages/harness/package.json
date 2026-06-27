@@ -18,7 +18,14 @@
   },
   "dependencies": {
     "@harnesskit/protocol": "0.1.0",
-    "@harnesskit/core": "0.1.0"
+    "@harnesskit/core": "0.1.0",
+    "nanoid": "^5.1.6",
+    "zod": "^4.1.12",
+    "mime-types": "^3.0.1",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0"
   },
   "license": "MIT"
 }

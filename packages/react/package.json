@@ -1,32 +1,54 @@
-{
-  "name": "@harnesskit/react",
-  "version": "0.1.0",
-  "description": "HarnessKit React hooks and UI components for harness chat",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
-  "files": ["dist"],
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
-  },
-  "dependencies": {
-    "@harnesskit/protocol": "0.1.0",
-    "@microsoft/fetch-event-source": "^2.0.1",
-    "zustand": "^5.0.0"
-  },
-  "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0",
-    "@tanstack/react-query": "^5.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@tanstack/react-query": { "optional": true }
-  },
-  "license": "MIT"
-}
+{
+  "name": "@harnesskit/react",
+  "version": "0.1.0",
+  "description": "HarnessKit React hooks, theme system, and chat UI components",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./theme.css": "./src/theme/styles.css",
+    "./tailwind": "./tailwind.preset.ts"
+  },
+  "files": ["dist", "src/theme/styles.css", "tailwind.preset.ts"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@harnesskit/protocol": "0.1.0",
+    "@microsoft/fetch-event-source": "^2.0.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.5.0",
+    "zustand": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "@tanstack/react-query": "^5.0.0",
+    "lucide-react": ">=0.400.0",
+    "react-markdown": "^10.0.0",
+    "remark-gfm": "^4.0.0",
+    "tailwindcss": "^3.4.0",
+    "@tailwindcss/typography": "^0.5.0"
+  },
+  "peerDependenciesMeta": {
+    "tailwindcss": { "optional": true },
+    "@tailwindcss/typography": { "optional": true }
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "^5.90.5",
+    "@types/node": "^24.12.2",
+    "@types/react": "^19.2.14",
+    "lucide-react": "^1.11.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "typescript": "^6.0.2"
+  },
+  "license": "MIT"
+}

@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { DISPATCH_MODES, TURN_KINDS } from './constants.js';
+import { DISPATCH_MODES, TURN_KINDS, TURN_PHASES } from './constants.js';
+
+export const turnKindSchema = z.enum(TURN_KINDS);
+export const turnPhaseSchema = z.enum(TURN_PHASES);
 
 export const createSessionSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),

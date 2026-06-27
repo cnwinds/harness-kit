@@ -17,6 +17,7 @@
 | 接入成本 | 后端 ≤ 5 行、前端 ≤ 3 行完成 MVP |
 | 协议稳定 | `@harnesskit/protocol`  semver 独立，Breaking 变更 major bump |
 | 可扩展 | Tool、Skill、Persistence、Auth 均可插件替换 |
+| 主题可配 | React 组件通过 CSS 变量 + preset 支持品牌配色（见 [THEMING.md](./THEMING.md)） |
 | 框架无关 | Core/Harness 零框架依赖；Server 默认 Fastify；React 可选 |
 
 ### 非目标（留在应用层）
@@ -166,6 +167,26 @@ const {
   streamStatus,         // connecting | connected | reconnecting | idle
 } = useHarnessChat();
 ```
+
+### 4.2.1 主题与配色
+
+React 组件通过 **语义化 CSS 变量**（`--hk-*`）驱动，支持三层定制：
+
+1. `preset="light" | "dark"` — 内置预设
+2. `theme={{ colors: { accent: '#c96442' } }}` — 局部覆盖
+3. `inheritCssVariables` — 从宿主 `:root` 变量继承（如 SkillChat 的 `--background`）
+
+```tsx
+<HarnessChatProvider
+  apiBase="/api"
+  inheritCssVariables
+  theme={{ colors: { accent: '#c96442' } }}
+>
+  <HarnessChat />
+</HarnessChatProvider>
+```
+
+详见 [THEMING.md](./THEMING.md)。
 
 ### 4.3 插件接口（Adapters）
 

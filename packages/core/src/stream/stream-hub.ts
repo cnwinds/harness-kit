@@ -1,41 +1,35 @@
-import type { EventPublisher, PublishEvent } from '../adapters.js';
+import type { SSEvent } from '@harnesskit/protocol';
 
-type Subscriber = (event: PublishEvent) => void;
+type Subscriber = (event: SSEvent) => void;
 
-/**
- * In-memory pub/sub for session SSE broadcast.
- * Does NOT buffer events — subscribers must reconcile via REST on reconnect.
- */
-export class StreamHub implements EventPublisher {
-  private readonly channels = new Map<string, Set<Subscriber>>();
+export class StreamHub {
+  private readonly sessions = new Map<string, Set<Subscriber>>();
 
-  publish(sessionId: string, event: PublishEvent): void {
-    const subs = this.channels.get(sessionId);
-    if (!subs) return;
-    for (const handler of subs) {
-      handler(event);
-    }
-  }
+  subscribe(sessionId: string, subscriber: Subscriber) {
+    const subscribers = this.sessions.get(sessionId) ?? new Set<Subscriber>();
+    subscribers.add(subscriber);
+    this.sessions.set(sessionId, subscribers);
 
-  subscribe(sessionId: string, handler: Subscriber): () => void {
-    let subs = this.channels.get(sessionId);
-    if (!subs) {
-      subs = new Set();
-      this.channels.set(sessionId, subs);
-    }
-    subs.add(handler);
     return () => {
-      subs!.delete(handler);
-      if (subs!.size === 0) {
-        this.channels.delete(sessionId);
+      const current = this.sessions.get(sessionId);
+      if (!current) {
+        return;
+      }
+      current.delete(subscriber);
+      if (current.size === 0) {
+        this.sessions.delete(sessionId);
       }
     };
   }
 
-  /** @internal test helper */
-  subscriberCount(sessionId: string): number {
-    return this.channels.get(sessionId)?.size ?? 0;
+  publish(sessionId: string, event: SSEvent) {
+    const subscribers = this.sessions.get(sessionId);
+    if (!subscribers) {
+      return;
+    }
+
+    for (const subscriber of subscribers) {
+      subscriber(event);
+    }
   }
 }
-
-export const createStreamHub = (): StreamHub => new StreamHub();

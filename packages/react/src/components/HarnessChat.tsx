@@ -5,33 +5,35 @@ export type HarnessChatProps = {
 };
 
 /**
- * Drop-in chat UI — minimal MVP component.
- * Phase 3: migrate full SkillChat chat components with Tailwind styling.
+ * Drop-in chat UI — uses --hk-* CSS tokens from HarnessChatProvider theme.
  */
 export const HarnessChat = ({ className }: HarnessChatProps) => {
   const { messages, streamingText, send, interrupt, streamStatus, runtime } = useHarnessChat();
   const active = runtime?.activeTurn;
 
   return (
-    <div className={className} style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: 'system-ui' }}>
-      <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+    <div className={['hk-chat', className].filter(Boolean).join(' ')}>
+      <div className="hk-chat__messages">
         {messages.map((e) =>
           e.kind === 'message' ? (
-            <div key={e.id} style={{ marginBottom: 12 }}>
-              <strong>{e.role}: </strong>
+            <div
+              key={e.id}
+              className={`hk-chat__message hk-chat__message--${e.role === 'user' ? 'user' : 'assistant'}`}
+            >
+              <div className="hk-chat__role">{e.role}</div>
               {e.content}
             </div>
           ) : null,
         )}
         {streamingText && (
-          <div style={{ marginBottom: 12, opacity: 0.8 }}>
-            <strong>assistant: </strong>
+          <div className="hk-chat__message hk-chat__message--assistant hk-chat__message--streaming">
+            <div className="hk-chat__role">assistant</div>
             {streamingText}
           </div>
         )}
       </div>
       <form
-        style={{ display: 'flex', gap: 8, padding: 16, borderTop: '1px solid #eee' }}
+        className="hk-chat__composer"
         onSubmit={(ev) => {
           ev.preventDefault();
           const fd = new FormData(ev.currentTarget);
@@ -40,15 +42,17 @@ export const HarnessChat = ({ className }: HarnessChatProps) => {
           ev.currentTarget.reset();
         }}
       >
-        <input name="content" placeholder="输入消息…" style={{ flex: 1, padding: 8 }} />
-        <button type="submit">发送</button>
+        <input className="hk-chat__input" name="content" placeholder="输入消息…" />
+        <button className="hk-chat__btn hk-chat__btn--primary" type="submit">
+          发送
+        </button>
         {active && (
-          <button type="button" onClick={() => void interrupt()}>
+          <button className="hk-chat__btn hk-chat__btn--danger" type="button" onClick={() => void interrupt()}>
             停止
           </button>
         )}
       </form>
-      <div style={{ padding: '4px 16px', fontSize: 12, color: '#888' }}>
+      <div className="hk-chat__status">
         {streamStatus}
         {active ? ` · turn ${active.turnId.slice(0, 8)}` : ''}
       </div>

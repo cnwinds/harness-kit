@@ -30,6 +30,10 @@ export const MESSAGE_KINDS = [
 
 export const FILE_BUCKETS = ['uploads', 'outputs', 'shared'] as const;
 
+export const FILE_SOURCES = ['upload', 'generated', 'shared'] as const;
+
+export const FILE_VISIBILITIES = ['visible', 'hidden'] as const;
+
 export const DISPATCH_MODES = ['auto', 'new_turn', 'steer', 'queue_next'] as const;
 
 export const DISPATCH_RESULTS = ['turn_started', 'steer_accepted', 'queued'] as const;

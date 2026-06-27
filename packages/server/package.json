@@ -21,7 +21,8 @@
     "@harnesskit/core": "0.1.0",
     "@harnesskit/harness": "0.1.0",
     "fastify": "^5.0.0",
-    "zod": "^4.0.0"
+    "nanoid": "^5.1.6",
+    "zod": "^4.1.12"
   },
   "peerDependencies": {
     "fastify": "^5.0.0"

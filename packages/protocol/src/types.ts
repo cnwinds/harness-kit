@@ -2,6 +2,8 @@ import type {
   DISPATCH_MODES,
   DISPATCH_RESULTS,
   FILE_BUCKETS,
+  FILE_SOURCES,
+  FILE_VISIBILITIES,
   MESSAGE_KINDS,
   SSE_EVENT_NAMES,
   TURN_KINDS,
@@ -12,6 +14,8 @@ import type {
 export type SSEEventName = (typeof SSE_EVENT_NAMES)[number];
 export type MessageKind = (typeof MESSAGE_KINDS)[number];
 export type FileBucket = (typeof FILE_BUCKETS)[number];
+export type FileSource = (typeof FILE_SOURCES)[number];
+export type FileVisibility = (typeof FILE_VISIBILITIES)[number];
 export type MessageDispatchMode = (typeof DISPATCH_MODES)[number];
 export type MessageDispatchResult = (typeof DISPATCH_RESULTS)[number];
 export type TurnKind = (typeof TURN_KINDS)[number];
@@ -33,7 +37,7 @@ export interface SessionSummary {
   createdAt: string;
   updatedAt: string;
   lastMessageAt: string | null;
-  activeSkills?: string[];
+  activeSkills: string[];
   metadata?: Record<string, unknown>;
 }
 
@@ -46,8 +50,11 @@ export interface FileRecord {
   mimeType: string | null;
   size: number;
   bucket: FileBucket;
+  source?: FileSource;
+  visibility?: FileVisibility;
   createdAt: string;
   downloadUrl?: string;
+  thumbnailUrl?: string;
 }
 
 export interface StoredEventBase {
@@ -118,9 +125,12 @@ export interface ImageMessageEvent extends StoredEventBase {
   kind: 'image';
   file: FileRecord;
   operation: 'generate' | 'edit';
-  provider: string;
+  provider: 'openai' | string;
   model: string;
+  source?: 'responses_tool' | 'images_generate_api' | 'images_edit_api';
   prompt: string;
+  revisedPrompt?: string;
+  inputFileIds?: string[];
 }
 
 export interface FileEvent extends StoredEventBase {
@@ -229,6 +239,45 @@ export interface TurnCompletedPayload {
   turnId: string;
   kind: TurnKind;
   status: TurnStatus;
+}
+
+export interface TurnInterruptResponse {
+  accepted: boolean;
+  turnId: string;
+  runtime: SessionRuntimeSnapshot;
+}
+
+export interface FollowUpQueueMutationResponse {
+  accepted: boolean;
+  inputId: string;
+  runtime: SessionRuntimeSnapshot;
+}
+
+export interface UserMessageCommittedPayload {
+  turnId: string;
+  inputId: string;
+  content: string;
+  createdAt: string;
+  consumedInputIds?: string[];
+  attachments?: FileRecord[];
+}
+
+export interface AssistantMessageCommittedPayload {
+  message: TextMessageEvent;
+}
+
+export interface ReasoningDeltaPayload {
+  content: string;
+  summaryIndex?: number;
+}
+
+export interface SessionFileContext {
+  id: string;
+  name: string;
+  mimeType: string | null;
+  size: number;
+  bucket: FileBucket;
+  relativePath: string;
 }
 
 export interface TokenCountPayload {

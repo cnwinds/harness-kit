@@ -1,7 +1,7 @@
 {
   "name": "@harnesskit/core",
   "version": "0.1.0",
-  "description": "HarnessKit turn runtime, stream hub, and adapter interfaces",
+  "description": "HarnessKit turn runtime, stream hub, storage, and runner",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,7 +18,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@harnesskit/protocol": "0.1.0"
+    "@harnesskit/protocol": "0.1.0",
+    "nanoid": "^5.1.6",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
