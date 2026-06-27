@@ -37,6 +37,7 @@ export type { FollowUpQueueProps } from './components/chat/FollowUpQueue.js';
 export { AttachmentChips } from './components/chat/AttachmentChips.js';
 export { MessageAttachments } from './components/chat/MessageAttachments.js';
 export { QuestionTimelineControl } from './components/chat/QuestionTimelineControl.js';
+export type { QuestionTimelineEntry } from './components/chat/QuestionTimelineControl.js';
 
 export {
   buildRenderableTimeline,

@@ -53,26 +53,35 @@ export function ChatPage() {
 ```
 
 ```tsx
-// ChatPage.tsx — 方式 B：Headless
-import { useHarnessChat, useHarnessSessions } from '@harnesskit/react';
+// ChatPage.tsx — 方式 B：Headless（应用自管 sessionId + 自定义 UI）
+import { useState } from 'react';
+import { useHarnessChat, MessageItem, Composer } from '@harnesskit/react';
 
 export function ChatPage() {
-  const { sessions, createSession } = useHarnessSessions();
+  // 会话列表/创建由应用层负责（例如 SkillChat 的 /api/sessions）。
+  // 传入 sessionId 后，useHarnessChat 会拉取 messages/runtime 并订阅 SSE。
   const [sessionId, setSessionId] = useState<string | null>(null);
   const chat = useHarnessChat({ sessionId });
 
   return (
     <div>
-      {chat.messages.map((e) => <EventRow key={e.id} event={e} />)}
-      {chat.streamingText && <p>{chat.streamingText}</p>}
-      <button onClick={() => chat.send('Hello')}>Send</button>
-      <button onClick={chat.interrupt} disabled={!chat.runtime?.activeTurn}>
-        Stop
+      {chat.messages.map((event) =>
+        event.kind === 'message' ? <MessageItem key={event.id} event={event} /> : null,
+      )}
+      {chat.streamingText ? <p>{chat.streamingText}</p> : null}
+      <Composer
+        onSend={(content) => void chat.send(content)}
+        disabled={chat.streamStatus === 'connecting'}
+      />
+      <button type="button" onClick={() => void chat.interrupt()} disabled={!chat.runtime?.activeTurn}>
+        停止
       </button>
     </div>
   );
 }
 ```
+
+> **说明：** HarnessKit 不提供 `useHarnessSessions`。会话 CRUD 属于应用层；`createHarnessChat()` 挂载的是消息、runtime、SSE 等 Harness 路由。若 `useHarnessChat.send()` 在未传入 `sessionId` 时自动建会话，需应用额外提供 `POST {apiBase}/sessions`。
 
 ### 4. Vite 代理
 
