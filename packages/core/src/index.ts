@@ -1,5 +1,9 @@
 export * from './session-context-types.js';
 export * from './config.js';
+export * from './provider-types.js';
+export * from './provider-policy.js';
+export { ProviderPrefsStore } from './provider-prefs.js';
+export * from './web-search-config.js';
 export * from './skill-descriptor.js';
 export type { FileServiceLike, MultipartFileLike } from './file-service.js';
 

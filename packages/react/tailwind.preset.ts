@@ -113,10 +113,14 @@ const harnessKitPreset: Partial<Config> = {
         'border-strong': 'var(--hk-border-strong, var(--border-strong))',
         foreground: 'var(--hk-text, var(--text))',
         'foreground-muted': 'var(--hk-text-muted, var(--text-muted))',
+        danger: 'var(--hk-danger, var(--danger, #c64242))',
         accent: {
           DEFAULT: 'var(--hk-accent, var(--accent))',
           foreground: 'var(--hk-accent-fg, var(--accent-fg))',
         },
+      },
+      fontSize: {
+        '2xs': ['0.68rem', { lineHeight: '1rem' }],
       },
       typography: () => ({
         DEFAULT: {

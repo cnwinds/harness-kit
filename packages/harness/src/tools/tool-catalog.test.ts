@@ -1,16 +1,18 @@
-﻿import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { buildAssistantToolCatalog, findAssistantToolDefinition, toResponsesFunctionTool } from './tool-catalog.js';
 
 describe('tool-catalog', () => {
   it('builds the assistant-facing tool catalog from config and enabled skills', () => {
     const catalog = buildAssistantToolCatalog({
       assistantToolsEnabled: true,
-      webSearchMode: 'live',
+      webSearchAvailable: true,
+      imageGenerationAvailable: true,
       enabledSkillNames: ['pdf'],
     });
 
     expect(catalog.map((tool) => tool.name)).toEqual([
       'web_search',
+      'generate_image',
       'web_fetch',
       'list_files',
       'read_file',
@@ -30,10 +32,11 @@ describe('tool-catalog', () => {
     }));
   });
 
-  it('removes web_search from the exposed catalog when disabled', () => {
+  it('removes web_search from the exposed catalog when unavailable', () => {
     const catalog = buildAssistantToolCatalog({
       assistantToolsEnabled: true,
-      webSearchMode: 'disabled',
+      webSearchAvailable: false,
+      imageGenerationAvailable: false,
       enabledSkillNames: [],
     });
 
@@ -51,7 +54,8 @@ describe('tool-catalog', () => {
   it('keeps skill script execution available even when generic assistant tools are disabled', () => {
     const catalog = buildAssistantToolCatalog({
       assistantToolsEnabled: false,
-      webSearchMode: 'live',
+      webSearchAvailable: true,
+      imageGenerationAvailable: true,
       enabledSkillNames: ['xlsx'],
     });
 
@@ -61,7 +65,8 @@ describe('tool-catalog', () => {
   it('converts catalog entries to Responses function tools', () => {
     const catalog = buildAssistantToolCatalog({
       assistantToolsEnabled: true,
-      webSearchMode: 'live',
+      webSearchAvailable: true,
+      imageGenerationAvailable: false,
       enabledSkillNames: [],
     });
 

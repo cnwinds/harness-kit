@@ -58,7 +58,11 @@ export const buildOpenAIHarnessInstructions = (args: {
   config: HarnessConfig;
   files: SessionFileContext[];
   availableSkills: SkillDescriptor[];
+  webSearchEnabled?: boolean;
+  imageGenerationEnabled?: boolean;
 }) => {
+  const webSearchEnabled = args.webSearchEnabled ?? args.config.WEB_SEARCH_MODE !== 'disabled';
+  const imageGenerationEnabled = args.imageGenerationEnabled ?? false;
   const today = new Date().toISOString().slice(0, 10);
   const roleDescription = `你是 ${args.config.productName ?? 'HarnessKit'} 的中文智能体。让模型承担智能判断，程序只负责提供工具和执行流程。`;
   const workingStyle = [
@@ -72,6 +76,25 @@ export const buildOpenAIHarnessInstructions = (args: {
     '- 如果已经拿到足够信息，就直接给出结论，不要为了显得像 agent 而额外调用工具。',
   ].join('\n');
 
+  const webToolsSection = webSearchEnabled
+    ? [
+      '## Web Tools',
+      '- 需要最新事实、新闻、政策、排名、招生、就业、薪资、分数线或官网信息时，必须先调用 `web_search`，不要直接猜测 URL。',
+      '- 只有在你已经从 `web_search` 结果、用户输入或可靠来源中拿到明确 URL 时，才使用 `web_fetch`。',
+      '- 禁止凭空构造或猜测域名（例如凭院校名称拼 `www.xxx.edu.cn`）。',
+      '- `web_search` 会返回候选结果与页面摘要；优先基于这些结果组织答案，必要时再对单个 URL 调用 `web_fetch`。',
+    ].join('\n')
+    : '';
+
+  const imageToolsSection = imageGenerationEnabled
+    ? [
+      '## Image Tools',
+      '- 用户明确要求画图、配图、海报、插画、封面或视觉稿时，可以使用生图能力。',
+      '- 优先使用系统已注册的原生生图工具；若不可用，再调用 `generate_image`。',
+      '- 生图失败时向用户说明暂时无法生成，不要假装已经出图。',
+    ].join('\n')
+    : '';
+
   const template = [
     '## Role',
     '{role_description}',
@@ -79,6 +102,8 @@ export const buildOpenAIHarnessInstructions = (args: {
     '## Working Style',
     '{working_style}',
     '',
+    '{web_tools_section}',
+    '{image_tools_section}',
     '## Runtime Context',
     '当前日期：{today}',
     '工作区根目录：{cwd}',
@@ -91,6 +116,8 @@ export const buildOpenAIHarnessInstructions = (args: {
   return template
     .replace('{role_description}', roleDescription)
     .replace('{working_style}', workingStyle)
+    .replace('{web_tools_section}', webToolsSection ? `${webToolsSection}\n\n` : '')
+    .replace('{image_tools_section}', imageToolsSection ? `${imageToolsSection}\n\n` : '')
     .replace('{today}', today)
     .replace('{cwd}', args.config.CWD)
     .replace('{files_section}', formatFilesSection(args.files))

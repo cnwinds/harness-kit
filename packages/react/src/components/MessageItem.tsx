@@ -23,6 +23,7 @@ import type {
   StoredEvent,
   TokenUsageStats,
 } from '@harnesskit/protocol';
+import { sanitizeAssistantVisibleText } from '@harnesskit/protocol';
 import { cn } from '../lib/cn.js';
 import { formatBytes } from '../lib/utils.js';
 import type { ToolTraceDisplayEvent, ToolTraceGroupDisplayEvent } from '../lib/timeline.js';
@@ -41,6 +42,7 @@ type Props = {
   onReuseImage?: (file: FileRecord) => void;
   downloading?: boolean;
   canExpandToolTrace?: boolean;
+  streamingReasoningSegmentId?: string | null;
 };
 
 const formatSkillPathLabel = (path: string) => {
@@ -71,6 +73,7 @@ const formatToolName = (tool: string, args?: Record<string, unknown>) => {
   const labels: Record<string, string> = {
     web_search: '搜索页面',
     web_fetch: '抓取网页',
+    generate_image: '生成图片',
     list_files: '列出文件',
     read_file: '读取文件',
     list_workspace_paths: '列出目录',
@@ -153,6 +156,11 @@ const formatToolWorkDescription = (event: ToolTraceDisplayEvent) => {
   if (event.tool === 'web_fetch') {
     return getTextArg(event.arguments, 'url')
       ? `抓取网页：${getTextArg(event.arguments, 'url')}`
+      : formattedMessage;
+  }
+  if (event.tool === 'generate_image') {
+    return getTextArg(event.arguments, 'prompt')
+      ? `生成图片：${getTextArg(event.arguments, 'prompt')}`
       : formattedMessage;
   }
   if (event.tool === 'read_file') {
@@ -276,20 +284,53 @@ const AssistantMetaFooter = ({ meta }: { meta?: AssistantMessageMeta }) => {
     formatDurationMs(meta?.durationMs),
   ].filter(Boolean);
 
-  if (metrics.length === 0 && !meta?.reasoningSummary) {
+  if (metrics.length === 0) {
     return null;
   }
 
   return (
-    <div className="mt-2 flex flex-col gap-1 text-2xs text-foreground-muted">
-      {meta?.reasoningSummary ? (
-        <div className="flex flex-col gap-0.5 rounded-md border border-border bg-surface px-2.5 py-2">
-          <strong className="text-xs font-semibold text-foreground">推理摘要</strong>
-          <span className="leading-5">{meta.reasoningSummary}</span>
-        </div>
-      ) : null}
-      {metrics.length > 0 ? <div>{metrics.join(' · ')}</div> : null}
+    <div className="mt-2 text-2xs text-foreground-muted">
+      {metrics.join(' · ')}
     </div>
+  );
+};
+
+const ReasoningCollapsible = ({
+  content,
+  streaming = false,
+}: {
+  content: string;
+  streaming?: boolean;
+}) => {
+  const [open, setOpen] = useState(streaming);
+
+  useEffect(() => {
+    if (streaming) {
+      setOpen(true);
+    }
+  }, [streaming, content]);
+
+  const trimmed = content.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  return (
+    <details
+      open={open}
+      onToggle={(event) => setOpen((event.currentTarget as HTMLDetailsElement).open)}
+      className="group/reasoning mb-3 rounded-md border border-border bg-surface"
+    >
+      <summary className="flex cursor-pointer list-none items-center gap-2 px-2.5 py-2 text-xs font-medium text-foreground hover:bg-surface-hover">
+        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-foreground-muted transition-transform group-open/reasoning:rotate-180" />
+        <span>思考过程</span>
+        <span className="text-2xs font-normal text-foreground-muted">{trimmed.length} 字</span>
+        {streaming ? <Loader2 className="h-3 w-3 animate-spin text-foreground-muted" /> : null}
+      </summary>
+      <div className="border-t border-border px-2.5 py-2 text-xs leading-6 text-foreground-muted whitespace-pre-wrap">
+        {trimmed}
+      </div>
+    </details>
   );
 };
 
@@ -559,6 +600,35 @@ const markdownComponents: Components = {
       </a>
     );
   },
+
+  img: ({ src, alt }) => {
+    if (!src) {
+      return null;
+    }
+
+    return (
+      <button
+        type="button"
+        onClick={() => imagePreviewActions.open({
+          id: src,
+          src,
+          label: alt?.trim() || '图片',
+          caption: alt?.trim() || undefined,
+        })}
+        className="my-2 block max-w-full cursor-zoom-in border-0 bg-transparent p-0 text-left"
+        aria-label={alt?.trim() ? `查看大图：${alt}` : '查看大图'}
+        title="点击查看大图"
+      >
+        <img
+          src={src}
+          alt={alt ?? ''}
+          className="max-w-full rounded-md border border-border"
+          loading="lazy"
+          draggable={false}
+        />
+      </button>
+    );
+  },
 };
 
 const CopyableMessageBlock = ({
@@ -591,7 +661,7 @@ const CopyableMessageBlock = ({
       if (!navigator.clipboard?.writeText) {
         throw new Error('clipboard unavailable');
       }
-      await navigator.clipboard.writeText(content);
+      await navigator.clipboard.writeText(displayContent);
       setCopyState('copied');
     } catch {
       setCopyState('failed');
@@ -600,6 +670,10 @@ const CopyableMessageBlock = ({
 
   const buttonLabel = copyState === 'copied' ? '已复制' : copyState === 'failed' ? '复制失败' : '复制';
   const isUser = variant === 'user';
+  const displayMarkdown = isUser ? markdown : sanitizeAssistantVisibleText(markdown);
+  const displayContent = isUser ? content : sanitizeAssistantVisibleText(content);
+  const reasoningContent = !isUser ? assistantMeta?.reasoningSummary?.trim() : '';
+  const isStreamingReasoning = variant === 'pending';
 
   return (
     <div className={cn('group/msg relative flex w-full', isUser && 'justify-end')}>
@@ -610,6 +684,10 @@ const CopyableMessageBlock = ({
           isUser ? 'max-w-[80%]' : 'w-full',
         )}
       >
+        {reasoningContent ? (
+          <ReasoningCollapsible content={reasoningContent} streaming={isStreamingReasoning} />
+        ) : null}
+        {displayMarkdown.trim() ? (
         <div
           className={cn(
             isUser
@@ -618,9 +696,15 @@ const CopyableMessageBlock = ({
           )}
         >
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-            {markdown}
+            {displayMarkdown}
           </ReactMarkdown>
         </div>
+        ) : isStreamingReasoning ? (
+          <div className="flex items-center gap-2 text-sm text-foreground-muted">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>正在组织回答…</span>
+          </div>
+        ) : null}
         {attachments && attachments.length > 0 ? (
           <MessageAttachments
             attachments={attachments}
@@ -693,6 +777,9 @@ const getToolIcon = (tool: string) => {
   }
   if (tool === 'web_fetch') {
     return Globe;
+  }
+  if (tool === 'generate_image') {
+    return ImagePlus;
   }
   if (tool === 'read_file' || tool === 'read_workspace_path_slice') {
     return FileText;
@@ -908,6 +995,7 @@ export const MessageItem = ({
   onReuseImage,
   downloading = false,
   canExpandToolTrace = true,
+  streamingReasoningSegmentId = null,
 }: Props) => {
   if (event.kind === 'pending_text') {
     return (
@@ -932,6 +1020,17 @@ export const MessageItem = ({
           assistantMeta={event.role === 'assistant' ? event.meta : undefined}
           attachments={event.attachments}
           onDownloadAttachment={onDownload}
+        />
+      </article>
+    );
+  }
+
+  if (event.kind === 'reasoning_segment') {
+    return (
+      <article className="flex w-full">
+        <ReasoningCollapsible
+          content={event.content}
+          streaming={streamingReasoningSegmentId === event.id}
         />
       </article>
     );

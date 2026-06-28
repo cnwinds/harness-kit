@@ -1,5 +1,3 @@
-import type { HarnessConfig } from '@harnesskit/core';
-
 export type AssistantToolDefinition = {
   name: string;
   description: string;
@@ -48,16 +46,16 @@ const createRunnerTool = (tool: Omit<AssistantToolDefinition, 'executionKind'>):
 
 export const buildAssistantToolCatalog = (args: {
   assistantToolsEnabled: boolean;
-  webSearchMode: HarnessConfig['WEB_SEARCH_MODE'];
+  webSearchAvailable: boolean;
+  imageGenerationAvailable: boolean;
   enabledSkillNames: string[];
 }): AssistantToolDefinition[] => {
   const definitions: AssistantToolDefinition[] = args.assistantToolsEnabled
     ? [
-        ...(args.webSearchMode === 'disabled'
-          ? []
-          : [createServiceTool({
+        ...(args.webSearchAvailable
+          ? [createServiceTool({
               name: 'web_search',
-              description: '联网搜索最新网页信息，适合最新事实、新闻、政策、排名、就业、薪资、学校官网等问题。',
+              description: '联网搜索公开网页并返回候选结果与页面摘要。不知道确切 URL 时必须先用此工具；适用于最新事实、新闻、政策、排名、招生分数线、就业薪资、学校官网等问题。',
               supportsParallelToolCalls: true,
               inputSchema: {
                 type: 'object',
@@ -67,10 +65,26 @@ export const buildAssistantToolCatalog = (args: {
                 },
                 required: ['query'],
               },
-            })]),
+            })]
+          : []),
+        ...(args.imageGenerationAvailable
+          ? [createServiceTool({
+              name: 'generate_image',
+              description: '根据文字描述生成图片。用户明确要求画图、配图、海报、插画、封面或视觉稿时使用。',
+              supportsParallelToolCalls: false,
+              inputSchema: {
+                type: 'object',
+                properties: {
+                  prompt: { type: 'string', description: '图片描述，尽量具体说明主体、风格、构图与用途' },
+                  size: { type: 'string', description: '图片尺寸，如 1024x1024、1280x1280' },
+                },
+                required: ['prompt'],
+              },
+            })]
+          : []),
         createServiceTool({
           name: 'web_fetch',
-          description: '抓取一个明确的网页 URL，并提取正文摘要。',
+          description: '抓取已确认的网页 URL 并提取正文摘要。仅在你已有明确 URL（来自 web_search 结果或用户提供）时使用；禁止猜测域名。',
           supportsParallelToolCalls: true,
           inputSchema: {
             type: 'object',

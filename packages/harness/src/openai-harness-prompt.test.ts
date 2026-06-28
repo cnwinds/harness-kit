@@ -38,9 +38,20 @@ describe('buildOpenAIHarnessInstructions', () => {
     expect(instructions).toContain('Context hygiene: 保持上下文精简');
     expect(instructions).toContain('Skill 是本地说明书，不是特殊流程节点');
     expect(instructions).toContain('是否调用、调用顺序和调用次数由你自行判断');
-    expect(instructions).not.toContain('需要最新事实、新闻、政策、排名、就业数据、薪资数据或官网信息时，优先使用 `web_search`。');
-    expect(instructions).not.toContain('用户给出明确网页 URL，或你需要抓取一个确定页面时，再使用 `web_fetch`。');
-    expect(instructions).not.toContain('访问项目文件、配置或脚本时，优先 `list_workspace_paths` / `read_workspace_path_slice`');
-    expect(instructions).not.toContain('需要读取文件内容时，优先 `list_files` / `read_file`');
+    expect(instructions).toContain('需要最新事实、新闻、政策、排名、招生、就业、薪资、分数线或官网信息时，必须先调用 `web_search`');
+    expect(instructions).toContain('禁止凭空构造或猜测域名');
+    expect(instructions).toContain('只有在你已经从 `web_search` 结果、用户输入或可靠来源中拿到明确 URL 时，才使用 `web_fetch`');
+  });
+
+  it('omits web tool routing when web search is disabled', () => {
+    const instructions = buildOpenAIHarnessInstructions({
+      config: createConfig(),
+      files: [],
+      availableSkills: [],
+      webSearchEnabled: false,
+    });
+
+    expect(instructions).not.toContain('## Web Tools');
+    expect(instructions).not.toContain('必须先调用 `web_search`');
   });
 });

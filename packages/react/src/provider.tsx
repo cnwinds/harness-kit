@@ -1,4 +1,5 @@
-import { createContext, useContext, useMemo, type CSSProperties, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { HarnessChatTheme, HarnessChatThemeInput, CssVariableMap } from './theme/types.js';
 import type { ThemePreset } from './theme/presets.js';
 import { resolveThemeWithInheritance, themeToCssProperties } from './theme/resolve-theme.js';
@@ -6,6 +7,7 @@ import { getHarnessChatTestContext } from './test-context.js';
 import type { HarnessAuthState } from './auth-types.js';
 import type { FileApiLike } from './file-api-types.js';
 import type { HarnessChatContextValue } from './context-types.js';
+import { createHarnessFilesApi } from './lib/create-files-api.js';
 
 export type { HarnessAuthState };
 export type { HarnessChatContextValue };
@@ -58,20 +60,43 @@ export const HarnessChatProvider = ({
     [auth],
   );
 
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 15_000,
+        refetchOnWindowFocus: false,
+      },
+    },
+  }));
+
+  const resolvedFilesApi = useMemo(
+    () => filesApi ?? createHarnessFilesApi({ apiBase, credentials, fetchOptions }),
+    [apiBase, credentials, fetchOptions, filesApi],
+  );
+
   const value = useMemo(
-    () => ({ apiBase, credentials, fetchOptions, theme: resolvedTheme, auth: resolvedAuth, filesApi }),
-    [apiBase, credentials, fetchOptions, resolvedTheme, resolvedAuth, filesApi],
+    () => ({
+      apiBase,
+      credentials,
+      fetchOptions,
+      theme: resolvedTheme,
+      auth: resolvedAuth,
+      filesApi: resolvedFilesApi,
+    }),
+    [apiBase, credentials, fetchOptions, resolvedTheme, resolvedAuth, resolvedFilesApi],
   );
 
   return (
-    <HarnessChatContext.Provider value={value}>
-      <div
-        className={['hk-chat-root', className].filter(Boolean).join(' ')}
-        style={{ ...cssVars, ...style } as CSSProperties}
-      >
-        {children}
-      </div>
-    </HarnessChatContext.Provider>
+    <QueryClientProvider client={queryClient}>
+      <HarnessChatContext.Provider value={value}>
+        <div
+          className={['hk-chat-root', className].filter(Boolean).join(' ')}
+          style={{ ...cssVars, ...style } as CSSProperties}
+        >
+          {children}
+        </div>
+      </HarnessChatContext.Provider>
+    </QueryClientProvider>
   );
 };
 

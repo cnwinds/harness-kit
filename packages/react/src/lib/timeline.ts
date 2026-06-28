@@ -183,6 +183,7 @@ const compactConsecutiveToolTraces = (items: TimelineItem[]): TimelineItem[] => 
 export const buildTimelineItems = (events: StoredEvent[]): TimelineItem[] => {
   const items: TimelineItem[] = [];
   const toolIndexByCallId = new Map<string, number>();
+  const reasoningIndexById = new Map<string, number>();
   const hiddenCallIds = new Set(
     events
       .filter(isToolEvent)
@@ -214,6 +215,20 @@ export const buildTimelineItems = (events: StoredEvent[]): TimelineItem[] => {
 
   for (const event of events) {
     if (isHiddenFileEvent(event)) {
+      continue;
+    }
+
+    if (event.kind === 'reasoning_segment') {
+      if (!event.content.trim()) {
+        continue;
+      }
+      const existingIndex = reasoningIndexById.get(event.id);
+      if (typeof existingIndex === 'number') {
+        items[existingIndex] = event;
+      } else {
+        items.push(event);
+        reasoningIndexById.set(event.id, items.length - 1);
+      }
       continue;
     }
 

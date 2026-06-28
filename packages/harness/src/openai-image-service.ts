@@ -113,6 +113,8 @@ export class OpenAIImageService {
     revisedPrompt?: string;
     inputFileIds?: string[];
     outputFormat?: 'png' | 'jpeg' | 'webp';
+    source?: ImageSource;
+    model?: string;
   }): Promise<SavedImageResult> {
     return await this.persistBase64Image({
       userId: args.userId,
@@ -122,9 +124,9 @@ export class OpenAIImageService {
       revisedPrompt: args.revisedPrompt,
       inputFileIds: args.inputFileIds,
       outputFormat: args.outputFormat,
-      source: 'responses_tool',
+      source: args.source ?? 'responses_tool',
       operation: args.inputFileIds && args.inputFileIds.length > 0 ? 'edit' : 'generate',
-      model: this.imageModel,
+      model: args.model ?? this.imageModel,
     });
   }
 

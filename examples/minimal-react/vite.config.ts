@@ -9,4 +9,7 @@ export default defineConfig({
       '/api/chat': 'http://localhost:3000',
     },
   },
+  css: {
+    postcss: './postcss.config.js',
+  },
 });

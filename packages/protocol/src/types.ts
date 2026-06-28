@@ -91,6 +91,11 @@ export interface ThinkingEvent extends StoredEventBase {
   content: string;
 }
 
+export interface ReasoningSegmentEvent extends StoredEventBase {
+  kind: 'reasoning_segment';
+  content: string;
+}
+
 export interface ToolCallEvent extends StoredEventBase {
   kind: 'tool_call';
   callId?: string;
@@ -146,6 +151,7 @@ export interface ErrorEvent extends StoredEventBase {
 export type StoredEvent =
   | TextMessageEvent
   | ThinkingEvent
+  | ReasoningSegmentEvent
   | ToolCallEvent
   | ToolProgressEvent
   | ToolResultEvent

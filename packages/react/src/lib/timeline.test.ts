@@ -81,6 +81,53 @@ describe('buildTimelineItems', () => {
     });
   });
 
+  it('interleaves reasoning segments with tool traces in event order', () => {
+    const events: StoredEvent[] = [
+      {
+        id: 'reason_1',
+        sessionId: 's1',
+        kind: 'reasoning_segment',
+        content: '先分析需求',
+        createdAt: '2026-04-10T10:00:00.000Z',
+      },
+      {
+        id: 'call_1',
+        sessionId: 's1',
+        kind: 'tool_call',
+        callId: 'tool_1',
+        skill: 'web_search',
+        arguments: { query: 'AI trends' },
+        createdAt: '2026-04-10T10:00:01.000Z',
+      },
+      {
+        id: 'result_1',
+        sessionId: 's1',
+        kind: 'tool_result',
+        callId: 'tool_1',
+        skill: 'web_search',
+        message: '检索完成',
+        createdAt: '2026-04-10T10:00:02.000Z',
+      },
+      {
+        id: 'reason_2',
+        sessionId: 's1',
+        kind: 'reasoning_segment',
+        content: '再规划信息图',
+        createdAt: '2026-04-10T10:00:03.000Z',
+      },
+    ];
+
+    const timeline = buildTimelineItems(events);
+
+    expect(timeline.map((item) => item.kind)).toEqual([
+      'reasoning_segment',
+      'tool_trace',
+      'reasoning_segment',
+    ]);
+    expect(timeline[0]).toMatchObject({ kind: 'reasoning_segment', content: '先分析需求' });
+    expect(timeline[2]).toMatchObject({ kind: 'reasoning_segment', content: '再规划信息图' });
+  });
+
   it('groups consecutive tool traces before visible output into one compact block', () => {
     const events: StoredEvent[] = [
       {

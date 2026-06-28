@@ -51,6 +51,7 @@ export type {
 } from './lib/timeline.js';
 export { cn } from './lib/cn.js';
 export { formatBytes } from './lib/utils.js';
+export { createHarnessFilesApi } from './lib/create-files-api.js';
 
 export { useStreamStore, applySSEEvent } from './store/stream-store.js';
 export type { SessionStreamState as SimpleSessionStreamState } from './store/stream-store.js';

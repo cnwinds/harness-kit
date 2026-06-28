@@ -2,6 +2,7 @@
 export const SSE_EVENT_NAMES = [
   'text_delta',
   'reasoning_delta',
+  'reasoning_segment',
   'token_count',
   'thinking',
   'tool_start',
@@ -20,6 +21,7 @@ export const SSE_EVENT_NAMES = [
 export const MESSAGE_KINDS = [
   'message',
   'thinking',
+  'reasoning_segment',
   'tool_call',
   'tool_progress',
   'tool_result',

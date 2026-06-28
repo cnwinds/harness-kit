@@ -69,15 +69,15 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       node.style.height = `${next}px`;
     }, [value]);
 
+    const sendDisabled =
+      disabled || !value.trim() || hasUploadingAttachments || sendPending || interruptPending;
+
     const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-      if (
-        event.key === 'Enter' &&
-        !event.shiftKey &&
-        typeof window !== 'undefined' &&
-        window.innerWidth >= 900
-      ) {
+      if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
-        onSend();
+        if (!sendDisabled) {
+          onSend();
+        }
       }
     };
 
@@ -86,9 +86,6 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       event.currentTarget.value = '';
       onSelectFiles(files);
     };
-
-    const sendDisabled =
-      disabled || !value.trim() || hasUploadingAttachments || sendPending || interruptPending;
 
     return (
       <footer

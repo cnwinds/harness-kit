@@ -1,21 +1,41 @@
-﻿import fs from 'node:fs/promises';
+import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { defaultHarnessConfig, type HarnessConfig } from '@harnesskit/core';
+import { defaultHarnessConfig, ProviderPrefsStore, type HarnessConfig } from '@harnesskit/core';
+import { ImageGenerationOrchestrator } from '../image/image-orchestrator.js';
+import { OpenAIImageService } from '../openai-image-service.js';
 import { AssistantToolService, networkResolver } from './assistant-tool-service.js';
 
-const createConfig = (dataRoot: string): HarnessConfig => defaultHarnessConfig({
+const createConfig = (dataRoot: string, overrides: Partial<HarnessConfig> = {}): HarnessConfig => defaultHarnessConfig({
   CWD: dataRoot,
   DATA_ROOT: dataRoot,
   SKILLS_ROOT: path.join(dataRoot, 'skills'),
   INSTALLED_SKILLS_ROOT: path.join(dataRoot, 'installed-skills'),
   OPENAI_API_KEY: 'test-token',
   OPENAI_BASE_URL: 'http://example.com/v1',
+  OPENAI_NATIVE_WEB_SEARCH: 'auto',
+  OPENAI_NATIVE_IMAGE_GENERATION: 'auto',
   NODE_ENV: 'test',
   LLM_REQUEST_TIMEOUT_MS: 1000,
   TOOL_MAX_OUTPUT_TOKENS: 3072,
+  ...overrides,
 });
+
+const createService = (
+  dataRoot: string,
+  configOverrides: Partial<HarnessConfig> = {},
+  fileService: { getFileContext: () => []; recordGeneratedFile: ReturnType<typeof vi.fn> } = {
+    getFileContext: () => [],
+    recordGeneratedFile: vi.fn(),
+  },
+) => {
+  const config = createConfig(dataRoot, configOverrides);
+  const prefsStore = new ProviderPrefsStore(config.DATA_ROOT);
+  const imageService = new OpenAIImageService(config, fileService as never);
+  const imageOrchestrator = new ImageGenerationOrchestrator(config, prefsStore, imageService);
+  return new AssistantToolService(config, fileService as never, prefsStore, imageOrchestrator);
+};
 
 const createResponsesStreamResponse = (events: Array<{ event: string; data: unknown }>) => new Response(
   new ReadableStream({
@@ -60,13 +80,10 @@ describe('AssistantToolService', () => {
       relativePath,
     }];
 
-    const service = new AssistantToolService(
-      createConfig(tempRoot),
-      {
-        getFileContext: () => fileContext,
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService(tempRoot, {}, {
+      getFileContext: () => fileContext,
+      recordGeneratedFile: vi.fn(),
+    });
 
     const listed = await service.execute({
       userId,
@@ -103,13 +120,7 @@ describe('AssistantToolService', () => {
     await fs.mkdir(path.join(tempRoot, 'docs'), { recursive: true });
     await fs.writeFile(path.join(tempRoot, 'docs', 'guide.md'), '# Guide\n\nLine 2\nLine 3', 'utf8');
 
-    const service = new AssistantToolService(
-      createConfig(tempRoot),
-      {
-        getFileContext: () => [],
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService(tempRoot);
 
     const listed = await service.execute({
       userId: 'u1',
@@ -152,13 +163,7 @@ describe('AssistantToolService', () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'skillchat-hidden-workspace-'));
     await fs.writeFile(path.join(tempRoot, '.env'), 'SECRET=1', 'utf8');
 
-    const service = new AssistantToolService(
-      createConfig(tempRoot),
-      {
-        getFileContext: () => [],
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService(tempRoot);
 
     await expect(service.execute({
       userId: 'u1',
@@ -180,13 +185,7 @@ describe('AssistantToolService', () => {
     await fs.mkdir(path.join(tempRoot, 'skills', 'pdf'), { recursive: true });
     await fs.writeFile(path.join(tempRoot, 'skills', 'pdf', 'SKILL.md'), '# PDF Skill', 'utf8');
 
-    const service = new AssistantToolService(
-      createConfig(tempRoot),
-      {
-        getFileContext: () => [],
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService(tempRoot);
 
     await expect(service.execute({
       userId: 'u1',
@@ -218,13 +217,7 @@ describe('AssistantToolService', () => {
       'utf8',
     );
 
-    const service = new AssistantToolService(
-      createConfig(tempRoot),
-      {
-        getFileContext: () => [],
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService(tempRoot);
 
     const read = await service.execute({
       userId: 'u1',
@@ -258,13 +251,7 @@ describe('AssistantToolService', () => {
     await fs.mkdir(installedSkillDir, { recursive: true });
     await fs.writeFile(path.join(installedSkillDir, 'SKILL.md'), '# Installed PDF Skill', 'utf8');
 
-    const service = new AssistantToolService(
-      config,
-      {
-        getFileContext: () => [],
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService(tempRoot, config);
 
     const listed = await service.execute({
       userId: 'u1',
@@ -339,13 +326,10 @@ describe('AssistantToolService', () => {
       downloadUrl: '/api/files/file_generated/download',
     }));
 
-    const service = new AssistantToolService(
-      createConfig(tempRoot),
-      {
-        getFileContext: () => [],
-        recordGeneratedFile,
-      } as never,
-    );
+    const service = createService(tempRoot, {}, {
+      getFileContext: () => [],
+      recordGeneratedFile,
+    });
 
     const result = await service.execute({
       userId,
@@ -408,13 +392,9 @@ describe('AssistantToolService', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const service = new AssistantToolService(
-      createConfig('/tmp/skillchat-tools'),
-      {
-        getFileContext: () => [],
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService('/tmp/skillchat-tools', {
+      OPENAI_BASE_URL: 'https://api.openai.com/v1',
+    });
 
     const result = await service.execute({
       userId: 'u1',
@@ -429,7 +409,7 @@ describe('AssistantToolService', () => {
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
-      'http://example.com/v1/responses',
+      'https://api.openai.com/v1/responses',
       expect.objectContaining({
         method: 'POST',
       }),
@@ -468,13 +448,9 @@ describe('AssistantToolService', () => {
     vi.stubGlobal('fetch', fetchMock);
     const staleYear = new Date().getFullYear() - 2;
 
-    const service = new AssistantToolService(
-      createConfig('/tmp/skillchat-tools'),
-      {
-        getFileContext: () => [],
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService('/tmp/skillchat-tools', {
+      OPENAI_BASE_URL: 'https://api.openai.com/v1',
+    });
 
     await service.execute({
       userId: 'u1',
@@ -494,21 +470,17 @@ describe('AssistantToolService', () => {
     expect(String(payload.instructions)).not.toContain(`人工智能 专业 就业率 薪资 中位数 毕业去向 ${new Date().getFullYear()}`);
   });
 
-  it('throws native web_search errors instead of falling back to local search', async () => {
+  it('returns search failure result when all providers fail without falling back', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockRejectedValue(new DOMException('The operation was aborted due to timeout', 'TimeoutError')),
     );
 
-    const service = new AssistantToolService(
-      createConfig('/tmp/skillchat-tools'),
-      {
-        getFileContext: () => [],
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService('/tmp/skillchat-tools', {
+      OPENAI_BASE_URL: 'https://api.openai.com/v1',
+    });
 
-    await expect(service.execute({
+    const result = await service.execute({
       userId: 'u1',
       sessionId: 's1',
       call: {
@@ -518,7 +490,53 @@ describe('AssistantToolService', () => {
           maxResults: 3,
         },
       },
-    })).rejects.toThrow('原生联网搜索失败：The operation was aborted due to timeout');
+    });
+
+    expect(result.summary).toContain('搜索失败');
+    expect(result.content).toContain('timeout');
+  });
+
+  it('uses tavily when TAVILY_API_KEY is configured', async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes('api.tavily.com/search')) {
+        return new Response(JSON.stringify({
+          results: [{
+            title: '2026 政策',
+            url: 'https://example.com/policy',
+            content: '政策摘要',
+          }],
+        }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+      if (url.includes('example.com/policy')) {
+        return new Response('<html><body><article>政策正文</article></body></html>', {
+          status: 200,
+          headers: { 'content-type': 'text/html' },
+        });
+      }
+      return new Response('not found', { status: 404 });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const service = createService('/tmp/skillchat-tools', {
+      TAVILY_API_KEY: 'tvly-test',
+    });
+
+    const result = await service.execute({
+      userId: 'u1',
+      sessionId: 's1',
+      call: {
+        tool: 'web_search',
+        arguments: {
+          query: '2026 教育政策',
+          maxResults: 3,
+        },
+      },
+    });
+
+    expect(result.summary).toContain('Tavily');
+    expect(result.content).toContain('example.com/policy');
+    expect(fetchMock.mock.calls.some(([input]) => String(input).includes('api.tavily.com/search'))).toBe(true);
   });
 
   it('retries native web_search api errors up to 5 attempts before succeeding', async () => {
@@ -556,13 +574,9 @@ describe('AssistantToolService', () => {
 
     vi.stubGlobal('fetch', fetchMock);
 
-    const service = new AssistantToolService(
-      createConfig('/tmp/skillchat-tools'),
-      {
-        getFileContext: () => [],
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService('/tmp/skillchat-tools', {
+      OPENAI_BASE_URL: 'https://api.openai.com/v1',
+    });
 
     const result = await service.execute({
       userId: 'u1',
@@ -582,16 +596,9 @@ describe('AssistantToolService', () => {
 
   it('rejects web_search when the config disables it', async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'skillchat-websearch-disabled-'));
-    const service = new AssistantToolService(
-      {
-        ...createConfig(tempRoot),
-        WEB_SEARCH_MODE: 'disabled',
-      },
-      {
-        getFileContext: () => [],
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService(tempRoot, {
+      WEB_SEARCH_MODE: 'disabled',
+    });
 
     await expect(service.execute({
       userId: 'u1',
@@ -617,13 +624,7 @@ describe('AssistantToolService', () => {
       })),
     );
 
-    const service = new AssistantToolService(
-      createConfig('/tmp/skillchat-tools'),
-      {
-        getFileContext: () => [],
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService('/tmp/skillchat-tools');
 
     await expect(service.execute({
       userId: 'u1',
@@ -659,13 +660,7 @@ describe('AssistantToolService', () => {
     const getDefaultResultOrderSpy = vi.spyOn(networkResolver, 'getDefaultResultOrder').mockReturnValue('verbatim');
     const setDefaultResultOrderSpy = vi.spyOn(networkResolver, 'setDefaultResultOrder').mockImplementation(() => {});
 
-    const service = new AssistantToolService(
-      createConfig('/tmp/skillchat-tools'),
-      {
-        getFileContext: () => [],
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService('/tmp/skillchat-tools');
 
     const result = await service.execute({
       userId: 'u1',
@@ -699,13 +694,7 @@ describe('AssistantToolService', () => {
     ] as unknown as Awaited<ReturnType<typeof networkResolver.lookup>>);
     const setDefaultResultOrderSpy = vi.spyOn(networkResolver, 'setDefaultResultOrder').mockImplementation(() => {});
 
-    const service = new AssistantToolService(
-      createConfig('/tmp/skillchat-tools'),
-      {
-        getFileContext: () => [],
-        recordGeneratedFile: vi.fn(),
-      } as never,
-    );
+    const service = createService('/tmp/skillchat-tools');
 
     await expect(service.execute({
       userId: 'u1',

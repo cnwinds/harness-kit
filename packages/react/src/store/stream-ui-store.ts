@@ -11,6 +11,7 @@ import type {
   ToolCallEvent,
   ToolProgressEvent,
   ToolResultEvent,
+  ReasoningSegmentEvent,
   TurnCompletedPayload,
   TurnKind,
   TurnLifecyclePayload,
@@ -36,6 +37,7 @@ export type SessionStreamState = {
   activeTurnStartedAt: string | null;
   activeTurnCanSteer: boolean;
   activeTurnRound: number | null;
+  activeReasoningSegmentId: string | null;
   reasoningSummary: string;
   currentTurnTokenUsage: TokenCountPayload | null;
   followUpQueue: RuntimeInputPreview[];
@@ -50,7 +52,8 @@ type StreamUiState = {
   pushToolCall: (sessionId: string, event: ToolCallEvent) => void;
   pushToolProgress: (sessionId: string, event: ToolProgressEvent) => void;
   pushToolResult: (sessionId: string, event: ToolResultEvent) => void;
-  appendReasoningDelta: (sessionId: string, content: string) => void;
+  appendReasoningDelta: (sessionId: string, content: string, segmentId?: string) => void;
+  upsertReasoningSegment: (sessionId: string, event: ReasoningSegmentEvent) => void;
   setCurrentTurnTokenUsage: (sessionId: string, usage: TokenCountPayload) => void;
   pushError: (sessionId: string, event: ErrorEvent) => void;
   setStreamStatus: (
@@ -89,6 +92,7 @@ const emptyStream = (): SessionStreamState => ({
   activeTurnStartedAt: null,
   activeTurnCanSteer: false,
   activeTurnRound: null,
+  activeReasoningSegmentId: null,
   reasoningSummary: '',
   currentTurnTokenUsage: null,
   followUpQueue: [],
@@ -101,6 +105,8 @@ const filterFollowUpQueue = (queue: RuntimeInputPreview[], removedInputIds: stri
     ? queue
     : queue.filter((input) => !removedInputIds.includes(input.inputId))
 );
+
+const createReasoningSegmentId = () => `reasoning_${crypto.randomUUID()}`;
 
 const shouldIgnoreStaleIdleSnapshot = (
   current: SessionStreamState,
@@ -172,6 +178,7 @@ export const useStreamUiStore = create<StreamUiState>((set) => ({
     streams: mutateStream(state.streams, sessionId, (current) => ({
       ...current,
       transientEvents: [...current.transientEvents, event],
+      activeReasoningSegmentId: null,
       lastError: null,
     })),
   })),
@@ -189,12 +196,62 @@ export const useStreamUiStore = create<StreamUiState>((set) => ({
       lastError: null,
     })),
   })),
-  appendReasoningDelta: (sessionId, content) => set((state) => ({
-    streams: mutateStream(state.streams, sessionId, (current) => ({
-      ...current,
-      reasoningSummary: `${current.reasoningSummary}${content}`,
-      lastError: null,
-    })),
+  appendReasoningDelta: (sessionId, content, segmentId) => set((state) => ({
+    streams: mutateStream(state.streams, sessionId, (current) => {
+      if (!content) {
+        return current;
+      }
+
+      const resolvedSegmentId = segmentId ?? current.activeReasoningSegmentId ?? createReasoningSegmentId();
+      const transientEvents = [...current.transientEvents];
+      const existingIndex = transientEvents.findIndex(
+        (event) => event.kind === 'reasoning_segment' && event.id === resolvedSegmentId,
+      );
+
+      if (existingIndex >= 0) {
+        const existing = transientEvents[existingIndex] as ReasoningSegmentEvent;
+        transientEvents[existingIndex] = {
+          ...existing,
+          content: `${existing.content}${content}`,
+        };
+      } else {
+        transientEvents.push({
+          id: resolvedSegmentId,
+          sessionId,
+          kind: 'reasoning_segment',
+          content,
+          createdAt: new Date().toISOString(),
+        });
+      }
+
+      return {
+        ...current,
+        transientEvents,
+        activeReasoningSegmentId: resolvedSegmentId,
+        lastError: null,
+      };
+    }),
+  })),
+  upsertReasoningSegment: (sessionId, event) => set((state) => ({
+    streams: mutateStream(state.streams, sessionId, (current) => {
+      const transientEvents = [...current.transientEvents];
+      const existingIndex = transientEvents.findIndex(
+        (item) => item.kind === 'reasoning_segment' && item.id === event.id,
+      );
+
+      if (existingIndex >= 0) {
+        transientEvents[existingIndex] = event;
+      } else if (event.content.trim()) {
+        transientEvents.push(event);
+      }
+
+      return {
+        ...current,
+        transientEvents,
+        activeReasoningSegmentId: null,
+        lastError: null,
+      };
+    }),
   })),
   setCurrentTurnTokenUsage: (sessionId, usage) => set((state) => ({
     streams: mutateStream(state.streams, sessionId, (current) => ({
@@ -251,6 +308,7 @@ export const useStreamUiStore = create<StreamUiState>((set) => ({
       activeTurnStartedAt: payload.startedAt ?? current.activeTurnStartedAt,
       activeTurnCanSteer: payload.canSteer,
       activeTurnRound: payload.round,
+      activeReasoningSegmentId: null,
       reasoningSummary: '',
       currentTurnTokenUsage: null,
       pendingText: '',
@@ -324,6 +382,7 @@ export const useStreamUiStore = create<StreamUiState>((set) => ({
       pendingText: '',
       transientEvents: [],
       activeTurnStartedAt: null,
+      activeReasoningSegmentId: null,
       reasoningSummary: '',
       currentTurnTokenUsage: null,
       lastError: null,

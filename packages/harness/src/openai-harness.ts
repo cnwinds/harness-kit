@@ -24,6 +24,8 @@ import {
   type ResponsesMessageInput,
 } from './openai-harness-context.js';
 import { buildOpenAIHarnessInstructions } from './openai-harness-prompt.js';
+import { resolveProviderCapabilities } from './provider-capabilities.js';
+import type { ImageGenerationOrchestrator } from './image/image-orchestrator.js';
 
 type JsonRecord = Record<string, unknown>;
 type ResponsesInputItem = JsonRecord;
@@ -32,7 +34,7 @@ type HarnessCallbacks = ToolRuntimeCallbacks & {
   onRoundStart?: (round: number) => Promise<void> | void;
   onTextDelta?: (content: string) => Promise<void> | void;
   onImageGenerated?: (event: {
-    source: 'responses_tool';
+    source: 'responses_tool' | 'images_generate_api';
     model: string;
     operation: 'generate' | 'edit';
     file: FileRecord;
@@ -132,7 +134,30 @@ const parseJsonArguments = (raw: unknown) => {
   return {};
 };
 
-const shouldReplayCompletedItem = (item: ResponsesInputItem) => item.type === 'function_call';
+const shouldReplayCompletedItem = (item: ResponsesInputItem) => (
+  item.type === 'function_call' || item.type === 'web_search_call'
+);
+
+const resolveStreamItemCallId = (
+  eventItem: ResponsesInputItem | null,
+  dataRecord: JsonRecord | null,
+  fallbackIndex: number,
+) => {
+  if (eventItem && typeof eventItem.id === 'string' && eventItem.id) {
+    return eventItem.id;
+  }
+  if (eventItem && typeof eventItem.call_id === 'string' && eventItem.call_id) {
+    return eventItem.call_id;
+  }
+  if (dataRecord && typeof dataRecord.item_id === 'string' && dataRecord.item_id) {
+    return dataRecord.item_id;
+  }
+  return `img_${fallbackIndex}`;
+};
+
+const isGenerateImageFunctionCall = (eventItem: ResponsesInputItem) => (
+  eventItem.type === 'function_call' && String(eventItem.name ?? '') === 'generate_image'
+);
 
 const buildCompactionInstructions = (productName: string) => [
   `你是 ${productName} 的上下文压缩器。`,
@@ -185,6 +210,7 @@ export class OpenAIHarness {
         throw new Error('OpenAI image service is not configured');
       },
     },
+    private readonly imageOrchestrator?: ImageGenerationOrchestrator,
   ) {}
 
   private get baseUrl() {
@@ -203,6 +229,7 @@ export class OpenAIHarness {
 
     return {
       effort: turnConfig?.reasoningEffort ?? this.config.OPENAI_REASONING_EFFORT,
+      summary: 'auto',
     };
   }
 
@@ -226,22 +253,29 @@ export class OpenAIHarness {
     }
 
     const availableSkills = args.availableSkills ?? [];
+    const capabilities = resolveProviderCapabilities(this.config);
+    const webSearchMode = args.turnConfig?.webSearchMode ?? this.config.WEB_SEARCH_MODE;
     const toolCatalog = buildAssistantToolCatalog({
       assistantToolsEnabled: this.config.ENABLE_ASSISTANT_TOOLS,
-      webSearchMode: args.turnConfig?.webSearchMode ?? this.config.WEB_SEARCH_MODE,
+      webSearchAvailable: webSearchMode !== 'disabled' && capabilities.webSearchToolAvailable,
+      imageGenerationAvailable: capabilities.imageFunctionToolAvailable,
       enabledSkillNames: availableSkills.map((skill) => skill.name),
     });
     const tools = [
       ...toolCatalog.map(toResponsesFunctionTool),
-      {
-        type: 'image_generation',
-        action: 'auto',
-      },
+      ...(capabilities.nativeImageToolAvailable
+        ? [{
+            type: 'image_generation',
+            action: 'auto',
+          }]
+        : []),
     ];
     const instructions = buildOpenAIHarnessInstructions({
       config: this.config,
       files: args.files,
       availableSkills,
+      webSearchEnabled: webSearchMode !== 'disabled' && capabilities.webSearchToolAvailable,
+      imageGenerationEnabled: capabilities.nativeImageToolAvailable || capabilities.imageFunctionToolAvailable,
     });
 
     const historyInput = buildResponsesHistoryInput({
@@ -325,6 +359,17 @@ export class OpenAIHarness {
           if (continuationCompactionsUsed > MAX_CONTINUATION_COMPACTIONS_PER_TURN) {
             throw new Error('单个 turn 的上下文压缩次数过多，已中止');
           }
+          continue;
+        }
+
+        const hasReplayableNativeItems = samplingResult.completedItems.some(shouldReplayCompletedItem);
+        if (hasReplayableNativeItems) {
+          const roundText = samplingResult.textDeltas.join('');
+          inputItems = [
+            ...inputItems,
+            ...(roundText ? [{ role: 'assistant', content: roundText }] : []),
+            ...samplingResult.completedItems.filter(shouldReplayCompletedItem),
+          ] as ResponsesInputItem[];
           continue;
         }
 
@@ -485,7 +530,41 @@ export class OpenAIHarness {
     const textDeltas: string[] = [];
     const completedItems: ResponsesInputItem[] = [];
     const localToolCalls: ParsedLocalToolCall[] = [];
+    const startedGenerateImageToolCalls = new Set<string>();
     let tokenUsage: TokenUsage | undefined;
+
+    const ensureGenerateImageToolStarted = async (callId: string, toolArguments: Record<string, unknown>) => {
+      if (startedGenerateImageToolCalls.has(callId)) {
+        return;
+      }
+      startedGenerateImageToolCalls.add(callId);
+      await args.callbacks?.onToolCall?.({
+        callId,
+        tool: 'generate_image',
+        arguments: toolArguments,
+      });
+      await args.callbacks?.onToolProgress?.({
+        callId,
+        tool: 'generate_image',
+        message: '正在生成图片',
+        status: 'running',
+      });
+    };
+
+    const updateGenerateImageToolProgress = async (
+      callId: string,
+      message: string,
+    ) => {
+      if (!startedGenerateImageToolCalls.has(callId)) {
+        await ensureGenerateImageToolStarted(callId, { prompt: args.currentPrompt });
+      }
+      await args.callbacks?.onToolProgress?.({
+        callId,
+        tool: 'generate_image',
+        message,
+        status: 'running',
+      });
+    };
 
     await this.streamWithRetry({
       signal: args.signal,
@@ -517,11 +596,40 @@ export class OpenAIHarness {
             return;
           case 'response.reasoning_summary_text.delta':
           case 'response.reasoning_text.delta':
-            if (this.config.ENABLE_REASONING_EVENTS && dataRecord && typeof dataRecord.delta === 'string') {
+            if (dataRecord && typeof dataRecord.delta === 'string') {
               await args.callbacks?.onReasoningDelta?.({
                 content: dataRecord.delta,
                 summaryIndex: typeof dataRecord.summary_index === 'number' ? dataRecord.summary_index : undefined,
               });
+            }
+            return;
+          case 'response.output_item.added':
+            if (!eventItem || typeof eventItem.type !== 'string') {
+              return;
+            }
+            if (eventItem.type === 'image_generation_call') {
+              const callId = resolveStreamItemCallId(eventItem, dataRecord, localToolCalls.length + 1);
+              await ensureGenerateImageToolStarted(callId, { prompt: args.currentPrompt });
+              return;
+            }
+            if (isGenerateImageFunctionCall(eventItem)) {
+              const callId = resolveStreamItemCallId(eventItem, dataRecord, localToolCalls.length + 1);
+              await ensureGenerateImageToolStarted(
+                callId,
+                parseJsonArguments(eventItem.arguments),
+              );
+            }
+            return;
+          case 'response.image_generation_call.in_progress':
+            if (dataRecord) {
+              const callId = resolveStreamItemCallId(null, dataRecord, localToolCalls.length + 1);
+              await updateGenerateImageToolProgress(callId, '正在准备生图…');
+            }
+            return;
+          case 'response.image_generation_call.generating':
+            if (dataRecord) {
+              const callId = resolveStreamItemCallId(null, dataRecord, localToolCalls.length + 1);
+              await updateGenerateImageToolProgress(callId, '正在绘制图片…');
             }
             return;
           case 'response.output_item.done':
@@ -532,27 +640,81 @@ export class OpenAIHarness {
               completedItems.push(eventItem);
             }
             if (eventItem.type === 'image_generation_call') {
-              const base64Image = readImageGenerationResult(eventItem.result);
-              if (!base64Image) {
-                throw new Error('图片生成工具未返回可用图片');
+              const callId = resolveStreamItemCallId(eventItem, dataRecord, localToolCalls.length + 1);
+              const prompt = args.currentPrompt;
+              await ensureGenerateImageToolStarted(callId, { prompt });
+
+              const emitImageToolSuccess = async (savedImage: {
+                model: string;
+                operation: 'generate' | 'edit';
+                file: FileRecord;
+                prompt: string;
+                revisedPrompt?: string;
+                inputFileIds?: string[];
+                source: 'responses_tool' | 'images_generate_api';
+              }) => {
+                await args.callbacks?.onToolResult?.({
+                  callId,
+                  tool: 'generate_image',
+                  summary: `已通过 ${savedImage.model} 生成图片`,
+                  content: [
+                    `提示词：${savedImage.prompt}`,
+                    savedImage.revisedPrompt ? `优化后提示词：${savedImage.revisedPrompt}` : '',
+                    `模型：${savedImage.model}`,
+                    `文件：${savedImage.file.displayName}`,
+                  ].filter(Boolean).join('\n\n'),
+                });
+                await args.callbacks?.onImageGenerated?.({
+                  source: savedImage.source,
+                  model: savedImage.model,
+                  operation: savedImage.operation,
+                  file: savedImage.file,
+                  prompt: savedImage.prompt,
+                  revisedPrompt: savedImage.revisedPrompt,
+                  inputFileIds: savedImage.inputFileIds,
+                });
+              };
+
+              try {
+                const base64Image = readImageGenerationResult(eventItem.result);
+                if (!base64Image) {
+                  throw new Error('图片生成工具未返回可用图片');
+                }
+                const savedImage = await this.openAIImageService.saveResponsesImageToolResult({
+                  userId: args.userId,
+                  sessionId: args.sessionId,
+                  prompt,
+                  base64Image,
+                  revisedPrompt: typeof eventItem.revised_prompt === 'string' ? eventItem.revised_prompt : undefined,
+                  inputFileIds: args.currentInputFileIds,
+                });
+                await emitImageToolSuccess({
+                  ...savedImage,
+                  source: 'responses_tool',
+                });
+              } catch (nativeError) {
+                if (!this.imageOrchestrator) {
+                  const message = nativeError instanceof Error ? nativeError.message : String(nativeError);
+                  await args.callbacks?.onToolResult?.({
+                    callId,
+                    tool: 'generate_image',
+                    summary: `图片生成失败：${message}`,
+                    content: message,
+                  });
+                  throw nativeError;
+                }
+                const savedImage = await this.imageOrchestrator.generate({
+                  userId: args.userId,
+                  sessionId: args.sessionId,
+                  request: {
+                    prompt,
+                  },
+                });
+                await emitImageToolSuccess({
+                  ...savedImage,
+                  source: 'images_generate_api',
+                });
               }
-              const savedImage = await this.openAIImageService.saveResponsesImageToolResult({
-                userId: args.userId,
-                sessionId: args.sessionId,
-                prompt: args.currentPrompt,
-                base64Image,
-                revisedPrompt: typeof eventItem.revised_prompt === 'string' ? eventItem.revised_prompt : undefined,
-                inputFileIds: args.currentInputFileIds,
-              });
-              await args.callbacks?.onImageGenerated?.({
-                source: 'responses_tool',
-                model: savedImage.model,
-                operation: savedImage.operation,
-                file: savedImage.file,
-                prompt: savedImage.prompt,
-                revisedPrompt: savedImage.revisedPrompt,
-                inputFileIds: savedImage.inputFileIds,
-              });
             }
             if (eventItem.type === 'function_call') {
               const callId = typeof eventItem.call_id === 'string' && eventItem.call_id

@@ -47,7 +47,7 @@ export const createHarnessChat = (options: HarnessChatOptions & { auth?: AuthRes
         .parse(request.query ?? {});
       options.sessionService.requireOwned(user.id, sessionId);
       const events = await options.messageStore.readEvents(user.id, sessionId, query);
-      return events;
+      return { events };
     });
 
     app.post(`${prefix}/sessions/:sessionId/messages`, async (request, reply) => {
@@ -70,7 +70,7 @@ export const createHarnessChat = (options: HarnessChatOptions & { auth?: AuthRes
       const user = await resolveUser(request);
       if (!user) return reply.code(401).send({ error: 'Unauthorized' });
       const { sessionId } = request.params as { sessionId: string };
-      return orchestrator.getRuntime(user.id, sessionId);
+      return { runtime: await orchestrator.getRuntime(user.id, sessionId) };
     });
 
     app.post(`${prefix}/sessions/:sessionId/turns/:turnId/steer`, async (request, reply) => {

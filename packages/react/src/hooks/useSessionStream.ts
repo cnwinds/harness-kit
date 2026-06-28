@@ -52,6 +52,7 @@ export const useSessionStream = (sessionId: string | null) => {
   const pushToolProgress = useStreamUiStore((state) => state.pushToolProgress);
   const pushToolResult = useStreamUiStore((state) => state.pushToolResult);
   const appendReasoningDelta = useStreamUiStore((state) => state.appendReasoningDelta);
+  const upsertReasoningSegment = useStreamUiStore((state) => state.upsertReasoningSegment);
   const setCurrentTurnTokenUsage = useStreamUiStore((state) => state.setCurrentTurnTokenUsage);
   const pushError = useStreamUiStore((state) => state.pushError);
   const setStreamStatus = useStreamUiStore((state) => state.setStreamStatus);
@@ -147,7 +148,27 @@ export const useSessionStream = (sessionId: string | null) => {
               }
 
               if (event.event === 'reasoning_delta') {
-                appendReasoningDelta(sessionId, String(payload.content ?? ''));
+                appendReasoningDelta(
+                  sessionId,
+                  String(payload.content ?? ''),
+                  typeof payload.segmentId === 'string' ? payload.segmentId : undefined,
+                );
+                return;
+              }
+
+              if (event.event === 'reasoning_segment') {
+                const segmentId = typeof payload.id === 'string' ? payload.id : event.id || crypto.randomUUID();
+                const content = String(payload.content ?? '').trim();
+                if (!content) {
+                  return;
+                }
+                upsertReasoningSegment(sessionId, {
+                  id: segmentId,
+                  sessionId,
+                  kind: 'reasoning_segment',
+                  content,
+                  createdAt: new Date().toISOString(),
+                });
                 return;
               }
 
@@ -558,6 +579,7 @@ export const useSessionStream = (sessionId: string | null) => {
   }, [
     appendTextDelta,
     appendReasoningDelta,
+    upsertReasoningSegment,
     applyTurnCompleted,
     applyTurnStarted,
     applyTurnStatus,
@@ -596,9 +618,11 @@ export const useSessionStream = (sessionId: string | null) => {
     activeTurnStartedAt: null,
     activeTurnCanSteer: false,
     activeTurnRound: null,
+    activeReasoningSegmentId: null,
     reasoningSummary: '',
     currentTurnTokenUsage: null,
     followUpQueue: [],
+    removedFollowUpInputIds: [],
     recovery: null,
   };
 };

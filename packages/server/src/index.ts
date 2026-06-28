@@ -1,4 +1,6 @@
 export { createHarnessChat } from './create-harness-chat.js';
+export { createHarnessChatBootstrap, createHarnessChatApp } from './bootstrap/index.js';
+export type { HarnessChatBootstrapOptions, HarnessChatBootstrapInstance } from './bootstrap/index.js';
 export { ChatOrchestrator } from './orchestrator/chat-orchestrator.js';
 export type { HarnessChatOptions, HarnessChatInstance, MountOptions } from './types.js';
 export type {

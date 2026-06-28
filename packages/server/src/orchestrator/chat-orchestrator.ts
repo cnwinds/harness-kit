@@ -7,6 +7,7 @@ import type {
   MessageDispatchRequest,
   MessageDispatchResponse,
   MessageRole,
+  ReasoningSegmentEvent,
   SessionRuntimeSnapshot,
   SSEvent,
   StoredEvent,
@@ -15,6 +16,11 @@ import type {
   TurnInterruptResponse,
   ToolCallEvent,
   ToolProgressEvent,
+} from '@harnesskit/protocol';
+import {
+  createAssistantTextStreamSplitState,
+  pushAssistantTextStreamDelta,
+  sanitizeAssistantVisibleText,
 } from '@harnesskit/protocol';
 import { SessionTurnRegistry } from '@harnesskit/core';
 import { SessionTurnRuntime } from '@harnesskit/core';
@@ -49,6 +55,7 @@ const now = () => new Date().toISOString();
 
 type ActiveAssistantSegment = {
   flush: (meta?: AssistantMessageMeta) => Promise<void>;
+  appendTextDelta: (delta: string) => { visibleDelta: string; tagReasoningDelta: string };
 };
 
 export class ChatOrchestrator {
@@ -258,14 +265,70 @@ export class ChatOrchestrator {
     const session = this.sessionService.requireOwned(user.id, sessionId);
     const availableSkills = this.resolveSessionSkills(user.id, session.activeSkills ?? []);
     const samplingStartedAt = Date.now();
-    let latestReasoningSummary = '';
-    let lastFlushedReasoningSummary = '';
-    let assistantSegmentText = '';
+    let currentReasoningSegment = '';
+    let currentReasoningSegmentId: string | null = null;
+    let textStreamState = createAssistantTextStreamSplitState();
     const assistantSegmentKey = this.getAssistantSegmentKey(user.id, sessionId, execution.turnId);
+
+    const publishReasoningDelta = (delta: string) => {
+      if (!delta) {
+        return;
+      }
+      if (!currentReasoningSegmentId) {
+        currentReasoningSegmentId = createEventId();
+      }
+      currentReasoningSegment += delta;
+      this.publish(sessionId, {
+        id: createEventId(),
+        event: 'reasoning_delta',
+        data: {
+          content: delta,
+          segmentId: currentReasoningSegmentId,
+        },
+      });
+    };
+
+    const flushReasoningSegment = async () => {
+      const content = currentReasoningSegment.trim();
+      if (!content) {
+        currentReasoningSegment = '';
+        currentReasoningSegmentId = null;
+        return;
+      }
+
+      const segmentId = currentReasoningSegmentId ?? createEventId();
+      const segmentEvent: ReasoningSegmentEvent = {
+        id: segmentId,
+        sessionId,
+        kind: 'reasoning_segment',
+        content,
+        createdAt: now(),
+      };
+      await this.emitStored(user.id, sessionId, segmentEvent);
+      this.publish(sessionId, {
+        id: segmentEvent.id,
+        event: 'reasoning_segment',
+        data: {
+          id: segmentEvent.id,
+          content: segmentEvent.content,
+        },
+      });
+      currentReasoningSegment = '';
+      currentReasoningSegmentId = null;
+    };
+
     const assistantSegment: ActiveAssistantSegment = {
+      appendTextDelta: (delta) => {
+        const split = pushAssistantTextStreamDelta(textStreamState, delta);
+        textStreamState = split.state;
+        return {
+          visibleDelta: split.visibleDelta,
+          tagReasoningDelta: split.tagReasoningDelta,
+        };
+      },
       flush: async (meta) => {
-        const content = assistantSegmentText;
-        assistantSegmentText = '';
+        const content = sanitizeAssistantVisibleText(textStreamState.rawText);
+        textStreamState = createAssistantTextStreamSplitState();
         if (!content.trim()) {
           return;
         }
@@ -275,11 +338,6 @@ export class ChatOrchestrator {
           durationMs: Math.max(0, Date.now() - samplingStartedAt),
           ...meta,
         };
-        const reasoningSummary = latestReasoningSummary.trim();
-        if (reasoningSummary && reasoningSummary !== lastFlushedReasoningSummary && !messageMeta.reasoningSummary) {
-          messageMeta.reasoningSummary = reasoningSummary;
-          lastFlushedReasoningSummary = reasoningSummary;
-        }
 
         const message = await this.persistTextMessage(user.id, sessionId, content, 'assistant', undefined, messageMeta);
         this.publishAssistantMessageCommitted(sessionId, message);
@@ -315,6 +373,7 @@ export class ChatOrchestrator {
           },
           onToolCall: async ({ callId, tool, arguments: toolArguments, hidden, meta }) => {
             execution.throwIfAborted();
+            await flushReasoningSegment();
             execution.updatePhase('tool_call');
             execution.setCanSteer(false);
             const toolCallEvent: ToolCallEvent = {
@@ -384,12 +443,18 @@ export class ChatOrchestrator {
             execution.throwIfAborted();
             execution.updatePhase('streaming_assistant');
             execution.setCanSteer(execution.kind === 'regular');
-            assistantSegmentText += delta;
+            const { visibleDelta, tagReasoningDelta } = assistantSegment.appendTextDelta(delta);
+            if (tagReasoningDelta) {
+              publishReasoningDelta(tagReasoningDelta);
+            }
+            if (!visibleDelta) {
+              return;
+            }
             this.publish(sessionId, {
               id: createEventId(),
               event: 'text_delta',
               data: {
-                content: delta,
+                content: visibleDelta,
               },
             });
           },
@@ -425,17 +490,9 @@ export class ChatOrchestrator {
               },
             });
           },
-          onReasoningDelta: async ({ content, summaryIndex }) => {
+          onReasoningDelta: async ({ content }) => {
             execution.throwIfAborted();
-            latestReasoningSummary += content;
-            this.publish(sessionId, {
-              id: createEventId(),
-              event: 'reasoning_delta',
-              data: {
-                content,
-                summaryIndex,
-              },
-            });
+            publishReasoningDelta(content);
           },
           onTokenUsage: async (usage) => {
             execution.throwIfAborted();
@@ -466,6 +523,7 @@ export class ChatOrchestrator {
       });
 
       execution.throwIfAborted();
+      await flushReasoningSegment();
       await assistantSegment.flush({
         tokenUsage: result.tokenUsage,
       });

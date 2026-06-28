@@ -1,4 +1,8 @@
 /** Harness engine configuration — framework-agnostic */
+import type { NativeToolsPolicy } from './provider-types.js';
+
+export type { ImageProviderId, NativeToolsPolicy, WebSearchProviderId } from './provider-types.js';
+
 export type HarnessConfig = {
   CWD: string;
   DATA_ROOT: string;
@@ -10,6 +14,22 @@ export type HarnessConfig = {
   MODEL_CONTEXT_WINDOW_TOKENS?: number;
   MODEL_AUTO_COMPACT_TOKEN_LIMIT?: number;
   WEB_SEARCH_MODE: 'disabled' | 'cached' | 'live';
+  WEB_SEARCH_PROVIDERS?: string;
+  OPENAI_NATIVE_WEB_SEARCH: NativeToolsPolicy;
+  TAVILY_API_KEY?: string;
+  SERPER_API_KEY?: string;
+  BRAVE_SEARCH_API_KEY?: string;
+  OPENAI_NATIVE_IMAGE_GENERATION: NativeToolsPolicy;
+  IMAGE_PROVIDERS?: string;
+  OPENAI_IMAGE_API_KEY?: string;
+  OPENAI_IMAGE_BASE_URL?: string;
+  OPENAI_IMAGE_MODEL?: string;
+  ZHIPU_IMAGE_API_KEY?: string;
+  ZHIPU_IMAGE_BASE_URL?: string;
+  ZHIPU_IMAGE_MODEL?: string;
+  DASHSCOPE_IMAGE_API_KEY?: string;
+  DASHSCOPE_IMAGE_BASE_URL?: string;
+  DASHSCOPE_IMAGE_MODEL?: string;
   OPENAI_REASONING_EFFORT: 'minimal' | 'low' | 'medium' | 'high' | 'xhigh';
   LLM_MAX_OUTPUT_TOKENS: number;
   TOOL_MAX_OUTPUT_TOKENS: number;
@@ -37,6 +57,8 @@ export const defaultHarnessConfig = (
   OPENAI_BASE_URL: 'https://api.openai.com/v1',
   OPENAI_MODEL: 'gpt-5.4',
   WEB_SEARCH_MODE: 'live',
+  OPENAI_NATIVE_WEB_SEARCH: 'auto',
+  OPENAI_NATIVE_IMAGE_GENERATION: 'auto',
   OPENAI_REASONING_EFFORT: 'xhigh',
   LLM_MAX_OUTPUT_TOKENS: 10240,
   TOOL_MAX_OUTPUT_TOKENS: 4096,
@@ -46,7 +68,7 @@ export const defaultHarnessConfig = (
   STREAM_BACKOFF_BASE_MS: 1000,
   STREAM_BACKOFF_MULTIPLIER: 2,
   ENABLE_TOKEN_TRACKING: true,
-  ENABLE_REASONING_EVENTS: false,
+  ENABLE_REASONING_EVENTS: true,
   MAX_CONCURRENT_RUNS: 5,
   RUN_TIMEOUT_MS: 120_000,
   productName: 'HarnessKit',
