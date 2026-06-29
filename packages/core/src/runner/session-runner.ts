@@ -97,13 +97,37 @@ export class SessionRunner {
 
     await args.callbacks.onProgress('任务进入执行队列', undefined, 'running');
 
+    const runnerEnvAllowlist = [
+      'PATH',
+      'HOME',
+      'USER',
+      'LANG',
+      'LC_ALL',
+      'LC_CTYPE',
+      'PYTHONUNBUFFERED',
+      'VIRTUAL_ENV',
+      'NODE_ENV',
+      'TMP',
+      'TMPDIR',
+      'TEMP',
+      'SYSTEMROOT',
+      'COMSPEC',
+      'PATHEXT',
+      'WINDIR',
+    ] as const;
+    const inheritedEnv = Object.fromEntries(
+      runnerEnvAllowlist
+        .filter((key) => process.env[key] !== undefined)
+        .map((key) => [key, process.env[key] as string]),
+    );
+
     let lastObservedMessage = '';
     const emittedArtifacts = new Set<string>();
 
     const child = spawn(command, commandArgs, {
       cwd: workDir,
       env: {
-        ...process.env,
+        ...inheritedEnv,
         PYTHONUNBUFFERED: '1',
         SKILLCHAT_WORKSPACE_ROOT: this.config.CWD,
         SKILLCHAT_SESSION_ROOT: sessionRoot,

@@ -1,7 +1,7 @@
 {
   "name": "@harnesskit/example-minimal-server",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^11.0.0",
-    "@harnesskit/server": "0.1.0",
+    "@harnesskit/server": "0.1.1",
     "dotenv": "^16.4.7",
     "fastify": "^5.0.0"
   },

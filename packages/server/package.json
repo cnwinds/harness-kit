@@ -1,6 +1,6 @@
 {
   "name": "@harnesskit/server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "HarnessKit Fastify adapter — createHarnessChat() one-line mount",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -19,9 +21,9 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@harnesskit/protocol": "0.1.0",
-    "@harnesskit/core": "0.1.0",
-    "@harnesskit/harness": "0.1.0",
+    "@harnesskit/protocol": "0.1.1",
+    "@harnesskit/core": "0.1.1",
+    "@harnesskit/harness": "0.1.1",
     "@fastify/multipart": "^9.0.0",
     "fastify": "^5.0.0",
     "nanoid": "^5.1.6",

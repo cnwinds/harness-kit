@@ -1,7 +1,7 @@
 {
   "name": "@harnesskit/example-demo",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Full-stack HarnessKit demo — server + React client",
   "scripts": {
     "dev": "concurrently -n server,client -c blue,green \"npm run dev:server\" \"npm run dev:client\"",

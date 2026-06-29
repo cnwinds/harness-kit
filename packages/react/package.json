@@ -2,7 +2,7 @@
 
   "name": "@harnesskit/react",
 
-  "version": "0.1.0",
+  "version": "0.1.1",
 
   "description": "HarnessKit React hooks, theme system, and chat UI components",
 
@@ -45,13 +45,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
 
     "test": "vitest run",
+
     "prepublishOnly": "npm run build"
 
   },
 
   "dependencies": {
 
-    "@harnesskit/protocol": "0.1.0",
+    "@harnesskit/protocol": "0.1.1",
 
     "@microsoft/fetch-event-source": "^2.0.1",
 
@@ -130,8 +131,12 @@
   },
 
   "license": "MIT",
+
   "publishConfig": {
+
     "access": "public"
+
   }
+
 }
 

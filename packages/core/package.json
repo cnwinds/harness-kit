@@ -1,6 +1,6 @@
 {
   "name": "@harnesskit/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "HarnessKit turn runtime, stream hub, storage, and runner",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -19,7 +21,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@harnesskit/protocol": "0.1.0",
+    "@harnesskit/protocol": "0.1.1",
     "nanoid": "^5.1.6",
     "zod": "^4.1.12"
   },

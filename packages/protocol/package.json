@@ -1,6 +1,6 @@
 {
   "name": "@harnesskit/protocol",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "HarnessKit cross-platform types, Zod schemas, and SSE event contract",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,9 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",

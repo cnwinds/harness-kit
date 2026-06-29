@@ -1,7 +1,7 @@
 {
   "name": "@harnesskit/example-minimal-react",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@harnesskit/react": "0.1.0",
+    "@harnesskit/react": "0.1.1",
     "@tanstack/react-query": "^5.90.5",
     "lucide-react": "^1.11.0",
     "react": "^19.0.0",

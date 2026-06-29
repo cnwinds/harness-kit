@@ -165,8 +165,10 @@ export const parseBailianImageResponse = (payload: unknown) => {
   throw new Error('百炼图片接口未返回可用图片');
 };
 
+import { safeFetch } from '../tools/safe-fetch.js';
+
 export const fetchImageAsBase64 = async (imageUrl: string) => {
-  const response = await fetch(imageUrl, { signal: AbortSignal.timeout(30_000) });
+  const response = await safeFetch(imageUrl, { signal: AbortSignal.timeout(30_000) });
   if (!response.ok) {
     throw new Error(`下载图片失败：HTTP ${response.status}`);
   }

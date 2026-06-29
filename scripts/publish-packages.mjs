@@ -26,6 +26,8 @@ const packages = [
   '@harnesskit/react',
 ];
 
+const publishRegistry = process.env.NPM_PUBLISH_REGISTRY ?? 'https://registry.npmjs.org';
+
 const run = (command, commandArgs, cwd = root) => {
   const result = spawnSync(command, commandArgs, {
     cwd,
@@ -41,7 +43,7 @@ console.log('Building all packages...');
 run('npm', ['run', 'build']);
 
 for (const workspace of packages) {
-  const publishArgs = ['publish', '-w', workspace, '--access', 'public'];
+  const publishArgs = ['publish', '-w', workspace, '--access', 'public', '--registry', publishRegistry];
   if (dryRun) {
     publishArgs.push('--dry-run');
   }

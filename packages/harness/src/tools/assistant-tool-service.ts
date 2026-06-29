@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import dns from 'node:dns';
 import { lookup as dnsLookup } from 'node:dns/promises';
 import { z } from 'zod';
+import { assertPublicHttpUrl, safeFetch } from './safe-fetch.js';
 import type { FileRecord, SessionFileContext } from '@harnesskit/protocol';
 import type { HarnessConfig, FileServiceLike, ProviderPrefsStore } from '@harnesskit/core';
 import { runWebSearchProviderChain } from './web/search-chain.js';
@@ -39,7 +40,6 @@ export interface ExecutedAssistantToolResult {
 
 const TOOL_TIMEOUT_MS = 15_000;
 const BROWSER_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36';
-const privateIpv4Pattern = /^(10\.|127\.|169\.254\.|172\.(1[6-9]|2\d|3[0-1])\.|192\.168\.)/;
 
 export const networkResolver = {
   lookup: dnsLookup,
@@ -122,30 +122,6 @@ const stripScriptsAndStyles = (input: string) => input
   .replace(/<!--[\s\S]*?-->/g, ' ');
 const truncate = (input: string, maxChars: number) => (input.length > maxChars ? `${input.slice(0, maxChars)}...` : input);
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const isBlockedHostname = (hostname: string) => {
-  const lower = hostname.toLowerCase();
-  return (
-    lower === 'localhost' ||
-    lower === '0.0.0.0' ||
-    lower === '::1' ||
-    lower.endsWith('.local') ||
-    privateIpv4Pattern.test(lower)
-  );
-};
-
-const assertPublicHttpUrl = (input: string) => {
-  const url = new URL(input);
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-    throw new Error('只支持 http/https 网页地址');
-  }
-
-  if (isBlockedHostname(url.hostname)) {
-    throw new Error('不允许访问本地或内网地址');
-  }
-
-  return url;
-};
 
 const toSessionToolPath = (relativePath: string) => {
   const normalized = relativePath.replace(/\\/g, '/');
@@ -416,6 +392,8 @@ export class AssistantToolService {
   }
 
   private async fetchText(url: string, action: string, accept = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8') {
+    await assertPublicHttpUrl(url);
+
     const requestInit = {
       signal: AbortSignal.timeout(TOOL_TIMEOUT_MS),
       headers: {
@@ -427,14 +405,14 @@ export class AssistantToolService {
 
     let response: Response;
     try {
-      response = await fetch(url, requestInit);
+      response = await safeFetch(url, requestInit);
     } catch (error) {
       const hostname = new URL(url).hostname;
       if (shouldRetryWithIpv4(error) && await hostHasDualStackAddresses(hostname)) {
         const previousOrder = networkResolver.getDefaultResultOrder();
         try {
           networkResolver.setDefaultResultOrder('ipv4first');
-          response = await fetch(url, requestInit);
+          response = await safeFetch(url, requestInit);
         } catch (retryError) {
           throw new Error(this.formatFetchError(url, retryError, action));
         } finally {
@@ -521,7 +499,7 @@ export class AssistantToolService {
 
   private async executeWebFetch(rawArguments: Record<string, unknown>): Promise<ExecutedAssistantToolResult> {
     const input = webFetchSchema.parse(rawArguments);
-    const url = assertPublicHttpUrl(input.url);
+    const url = await assertPublicHttpUrl(input.url);
     const response = await this.fetchText(url.toString(), '访问网页');
     const excerpt = response.contentType.includes('text/html')
       ? extractHtmlExcerpt(response.body, input.maxChars)
