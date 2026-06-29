@@ -16,23 +16,23 @@ import type {
   TurnInterruptResponse,
   ToolCallEvent,
   ToolProgressEvent,
-} from '@harnesskit/protocol';
+} from '@skillchat/harness-protocol';
 import {
   createAssistantTextStreamSplitState,
   pushAssistantTextStreamDelta,
   sanitizeAssistantVisibleText,
-} from '@harnesskit/protocol';
-import { SessionTurnRegistry } from '@harnesskit/core';
-import { SessionTurnRuntime } from '@harnesskit/core';
-import { FileRuntimePersistence } from '@harnesskit/core';
-import type { RuntimeInput, TurnExecutionContext } from '@harnesskit/core';
-import type { TurnTaskExecutionArgs } from '@harnesskit/core';
-import type { StreamHub } from '@harnesskit/core';
-import { MessageStore } from '@harnesskit/core';
-import { getSessionTurnRuntimePath } from '@harnesskit/core';
-import { RegularTurnTask } from '@harnesskit/core';
-import { CompactTurnTask } from '@harnesskit/core';
-import { accumulateSessionTokenUsage } from '@harnesskit/core';
+} from '@skillchat/harness-protocol';
+import { SessionTurnRegistry } from '@skillchat/harness-core';
+import { SessionTurnRuntime } from '@skillchat/harness-core';
+import { FileRuntimePersistence } from '@skillchat/harness-core';
+import type { RuntimeInput, TurnExecutionContext } from '@skillchat/harness-core';
+import type { TurnTaskExecutionArgs } from '@skillchat/harness-core';
+import type { StreamHub } from '@skillchat/harness-core';
+import { MessageStore } from '@skillchat/harness-core';
+import { getSessionTurnRuntimePath } from '@skillchat/harness-core';
+import { RegularTurnTask } from '@skillchat/harness-core';
+import { CompactTurnTask } from '@skillchat/harness-core';
+import { accumulateSessionTokenUsage } from '@skillchat/harness-core';
 import type {
   FileServiceLike,
   InstalledSkillStoreLike,
@@ -40,9 +40,9 @@ import type {
   SkillDescriptor,
   SkillRegistryLike,
 } from '../adapters.js';
-import type { HarnessConfig } from '@harnesskit/core';
-import { OpenAIHarness } from '@harnesskit/harness';
-import { buildResponsesHistoryInput, shouldAutoCompactHistory, SessionContextStore } from '@harnesskit/harness';
+import type { HarnessConfig } from '@skillchat/harness-core';
+import { OpenAIHarness } from '@skillchat/harness';
+import { buildResponsesHistoryInput, shouldAutoCompactHistory, SessionContextStore } from '@skillchat/harness';
 
 type UserContext = {
   id: string;
@@ -206,10 +206,10 @@ export class ChatOrchestrator {
 
   private resolveAttachmentRecords(userId: string, attachmentIds?: string[]) {
     if (!attachmentIds || attachmentIds.length === 0) {
-      return [] as import('@harnesskit/protocol').FileRecord[];
+      return [] as import('@skillchat/harness-protocol').FileRecord[];
     }
     const uniqueIds = [...new Set(attachmentIds)];
-    const records: import('@harnesskit/protocol').FileRecord[] = [];
+    const records: import('@skillchat/harness-protocol').FileRecord[] = [];
     for (const fileId of uniqueIds) {
       try {
         records.push(this.fileService.getById(userId, fileId));
@@ -255,7 +255,7 @@ export class ChatOrchestrator {
     sessionId: string;
     history: StoredEvent[];
     contextState: Awaited<ReturnType<SessionContextStore['load']>>;
-    files: import('@harnesskit/protocol').SessionFileContext[];
+    files: import('@skillchat/harness-protocol').SessionFileContext[];
     execution: TurnExecutionContext;
     input: RuntimeInput;
     startingRound: number;

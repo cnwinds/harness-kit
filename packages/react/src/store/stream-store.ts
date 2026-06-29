@@ -3,7 +3,7 @@ import type {
   SessionRuntimeSnapshot,
   SSEEventName,
   StoredEvent,
-} from '@harnesskit/protocol';
+} from '@skillchat/harness-protocol';
 
 export type StreamStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'error';
 

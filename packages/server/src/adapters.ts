@@ -1,6 +1,6 @@
-import type { SessionSummary } from '@harnesskit/protocol';
-import type { SkillDescriptor } from '@harnesskit/core';
-import type { FileServiceLike } from '@harnesskit/core';
+import type { SessionSummary } from '@skillchat/harness-protocol';
+import type { SkillDescriptor } from '@skillchat/harness-core';
+import type { FileServiceLike } from '@skillchat/harness-core';
 
 export type ChatUserContext = {
   id: string;

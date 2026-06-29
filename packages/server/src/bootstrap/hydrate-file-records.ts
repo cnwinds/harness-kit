@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { FileRecord } from '@harnesskit/protocol';
+import type { FileRecord } from '@skillchat/harness-protocol';
 import type { LocalFileService } from './local-file-service.js';
 
 const FILE_EVENT_KINDS = new Set(['image', 'file']);

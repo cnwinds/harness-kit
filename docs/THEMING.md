@@ -98,7 +98,7 @@ const theme = useHarnessTheme();
 或手动注入 CSS 变量：
 
 ```tsx
-import { themeToCssProperties, resolveTheme } from '@harnesskit/react';
+import { themeToCssProperties, resolveTheme } from '@skillchat/harness-react';
 
 const vars = themeToCssProperties(resolveTheme({ preset: 'dark' }));
 <div style={vars as React.CSSProperties}>
@@ -125,11 +125,11 @@ HarnessKit 提供可选 Tailwind preset，映射 `--hk-*` 语义色与 `prose-hk
 
 ```typescript
 import type { Config } from 'tailwindcss';
-import harnessKitPreset from '@harnesskit/react/tailwind';
+import harnessKitPreset from '@skillchat/harness-react/tailwind';
 
 export default {
   presets: [harnessKitPreset],
-  content: ['./src/**/*.{ts,tsx}', './node_modules/@harnesskit/react/dist/**/*.js'],
+  content: ['./src/**/*.{ts,tsx}', './node_modules/@skillchat/harness-react/dist/**/*.js'],
 } satisfies Config;
 ```
 

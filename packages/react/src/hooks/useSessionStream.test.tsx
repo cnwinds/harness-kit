@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
-import type { TextMessageEvent } from '@harnesskit/protocol';
+import type { TextMessageEvent } from '@skillchat/harness-protocol';
 import { useSessionStream } from './useSessionStream.js';
 import { useStreamUiStore } from '../store/stream-ui-store.js';
 import {

@@ -1,4 +1,4 @@
-import type { HarnessConfig } from '@harnesskit/core';
+import type { HarnessConfig } from '@skillchat/harness-core';
 import { buildSearchQueries } from './query-planner.js';
 import {
   canonicalizeUrl,

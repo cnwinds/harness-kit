@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { HarnessConfig } from '@harnesskit/core';
-import { getSessionContextStatePath } from '@harnesskit/core';
-import type { SessionTokenUsage } from '@harnesskit/core';
+import type { HarnessConfig } from '@skillchat/harness-core';
+import { getSessionContextStatePath } from '@skillchat/harness-core';
+import type { SessionTokenUsage } from '@skillchat/harness-core';
 
-import type { SessionContextState, SessionCompactionState, SessionCompactionTrigger } from '@harnesskit/core';
+import type { SessionContextState, SessionCompactionState, SessionCompactionTrigger } from '@skillchat/harness-core';
 
 export type { SessionContextState, SessionCompactionState, SessionCompactionTrigger };
 

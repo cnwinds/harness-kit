@@ -1,6 +1,6 @@
 import type { Config } from 'tailwindcss';
 import typography from '@tailwindcss/typography';
-import harnessKitPreset from '@harnesskit/react/tailwind';
+import harnessKitPreset from '@skillchat/harness-react/tailwind';
 
 export default {
   content: [

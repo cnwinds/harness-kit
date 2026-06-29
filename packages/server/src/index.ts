@@ -12,4 +12,4 @@ export type {
 } from './adapters.js';
 export type { AuthResolver } from './auth.js';
 export { anonymousAuth } from './auth.js';
-export type { HarnessConfig } from '@harnesskit/core';
+export type { HarnessConfig } from '@skillchat/harness-core';

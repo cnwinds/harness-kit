@@ -6,21 +6,21 @@
 
 | SkillChat（已删除/替换） | HarnessKit |
 |---|---|
-| `@skillchat/shared` 事件类型 | `@harnesskit/protocol` |
-| `apps/server/src/core/turn/*` | `@harnesskit/core` |
-| `apps/server/src/core/stream/stream-hub.ts` | `@harnesskit/core` |
-| `apps/server/src/modules/chat/*` | `@harnesskit/harness` + `@harnesskit/server` |
-| `apps/web/src/stores/ui-store.ts` (streams) | `@harnesskit/react` `useStreamUiStore` |
-| `apps/web/src/components/chat/*` | `@harnesskit/react/components`（可选逐步替换） |
+| `@skillchat/shared` 事件类型 | `@skillchat/harness-protocol` |
+| `apps/server/src/core/turn/*` | `@skillchat/harness-core` |
+| `apps/server/src/core/stream/stream-hub.ts` | `@skillchat/harness-core` |
+| `apps/server/src/modules/chat/*` | `@skillchat/harness` + `@skillchat/harness-server` |
+| `apps/web/src/stores/ui-store.ts` (streams) | `@skillchat/harness-react` `useStreamUiStore` |
+| `apps/web/src/components/chat/*` | `@skillchat/harness-react/components`（可选逐步替换） |
 
 ## SkillChat 当前接入方式
 
 ### Server
 
 ```typescript
-import { MessageStore, StreamHub, ensureBaseDirectories } from '@harnesskit/core';
-import { createOpenAIHarnessStack, SessionContextStore } from '@harnesskit/harness';
-import { ChatOrchestrator } from '@harnesskit/server';
+import { MessageStore, StreamHub, ensureBaseDirectories } from '@skillchat/harness-core';
+import { createOpenAIHarnessStack, SessionContextStore } from '@skillchat/harness';
+import { ChatOrchestrator } from '@skillchat/harness-server';
 import { toHarnessConfig } from './adapters/harness-config.js';
 import { toSkillRegistryLike } from './adapters/harness-adapters.js';
 ```
@@ -39,7 +39,7 @@ import { useSessionStream } from '@/lib/harness-stream'; // 薄封装，auth 来
 ### 本地 file: 依赖
 
 ```json
-"@harnesskit/core": "file:../../../harness-kit/packages/core"
+"@skillchat/harness-core": "file:../../../harness-kit/packages/core"
 ```
 
 修改 harness-kit 后需先 `npm run build`，再在 skill-chat 执行 `npm install --engine-strict=false`。
@@ -54,7 +54,7 @@ import { useSessionStream } from '@/lib/harness-stream'; // 薄封装，auth 来
 
 ```typescript
 // tailwind.config.ts
-import harnessPreset from '@harnesskit/react/tailwind';
+import harnessPreset from '@skillchat/harness-react/tailwind';
 
 export default {
   presets: [harnessPreset],

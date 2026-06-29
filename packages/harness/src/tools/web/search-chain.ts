@@ -1,4 +1,4 @@
-import type { HarnessConfig, ProviderPrefsStore, WebSearchProviderId } from '@harnesskit/core';
+import type { HarnessConfig, ProviderPrefsStore, WebSearchProviderId } from '@skillchat/harness-core';
 import { buildWebSearchProviderChain } from '../../provider-capabilities.js';
 import { executeOpenAINativeWebSearch } from './providers/openai-native.js';
 import { getWebSearchProviderLabel, createConfiguredSearchProvider } from './search-provider.js';

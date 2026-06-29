@@ -7,7 +7,7 @@ import type {
   TurnKind,
   TurnLifecyclePayload,
   UserMessageCommittedPayload,
-} from '@harnesskit/protocol';
+} from '@skillchat/harness-protocol';
 import type {
   ActiveTurnState,
   PersistedRuntimeInput,

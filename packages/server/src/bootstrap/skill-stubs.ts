@@ -1,4 +1,4 @@
-import type { SkillDescriptor } from '@harnesskit/core';
+import type { SkillDescriptor } from '@skillchat/harness-core';
 import type { InstalledSkillStoreLike, SkillRegistryLike } from '../adapters.js';
 
 export class EmptySkillRegistry implements SkillRegistryLike {

@@ -1,5 +1,5 @@
 {
-  "name": "@harnesskit/example-minimal-server",
+  "name": "@skillchat/harness-example-minimal-server",
   "private": true,
   "version": "0.1.1",
   "type": "module",
@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^11.0.0",
-    "@harnesskit/server": "0.1.1",
+    "@skillchat/harness-server": "0.1.1",
     "dotenv": "^16.4.7",
     "fastify": "^5.0.0"
   },

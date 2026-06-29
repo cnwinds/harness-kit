@@ -31,7 +31,7 @@ export type ToolRuntimeCallbacks = {
     hidden?: boolean;
     meta?: Record<string, unknown>;
   }) => Promise<void> | void;
-  onArtifact?: (file: import('@harnesskit/protocol').FileRecord) => Promise<void> | void;
+  onArtifact?: (file: import('@skillchat/harness-protocol').FileRecord) => Promise<void> | void;
 };
 
 const createServiceTool = (tool: Omit<AssistantToolDefinition, 'executionKind'>): AssistantToolDefinition => ({

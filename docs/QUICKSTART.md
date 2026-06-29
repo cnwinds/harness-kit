@@ -10,21 +10,21 @@
 
 ## 安装
 
-`@harnesskit/*` 当前为 monorepo 内部包，尚未发布到公共 npm。在独立项目中通过 `file:` 引用：
+`@skillchat/harness-*` 当前为 monorepo 内部包，发布到 `@skillchat` npm 组织。在独立项目中通过 `file:` 引用：
 
 ```json
 {
   "dependencies": {
-    "@harnesskit/server": "file:../harness-kit/packages/server",
-    "@harnesskit/react": "file:../harness-kit/packages/react",
-    "@harnesskit/protocol": "file:../harness-kit/packages/protocol"
+    "@skillchat/harness-server": "file:../harness-kit/packages/server",
+    "@skillchat/harness-react": "file:../harness-kit/packages/react",
+    "@skillchat/harness-protocol": "file:../harness-kit/packages/protocol"
   }
 }
 ```
 
 引用后先在 harness-kit 仓库执行 `npm run build`，再在你的项目执行 `npm install`。
 
-> 若已发布到 npm，可直接 `npm install @harnesskit/server @harnesskit/react @harnesskit/protocol`。
+> 若已发布到 npm，可直接 `npm install @skillchat/harness-server @skillchat/harness-react @skillchat/harness-protocol`。
 
 ## 选哪个 API？
 
@@ -42,7 +42,7 @@
 ```typescript
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
-import { createHarnessChatBootstrap } from '@harnesskit/server';
+import { createHarnessChatBootstrap } from '@skillchat/harness-server';
 
 const app = Fastify({ logger: true });
 await app.register(cors, { origin: true, credentials: true });
@@ -77,7 +77,7 @@ Bootstrap 挂载后自动注册：
 
 ### 1. 安装运行时依赖
 
-使用 `<HarnessChat />` 开箱即用 UI 时，除 `@harnesskit/react` 外还需：
+使用 `<HarnessChat />` 开箱即用 UI 时，除 `@skillchat/harness-react` 外还需：
 
 ```bash
 npm install @tanstack/react-query lucide-react react-markdown remark-gfm
@@ -90,7 +90,7 @@ npm install -D tailwindcss @tailwindcss/typography postcss autoprefixer
 
 ```tsx
 // main.tsx
-import '@harnesskit/react/theme.css';
+import '@skillchat/harness-react/theme.css';
 ```
 
 ### 3. 配置 Tailwind
@@ -99,13 +99,13 @@ import '@harnesskit/react/theme.css';
 // tailwind.config.ts
 import type { Config } from 'tailwindcss';
 import typography from '@tailwindcss/typography';
-import harnessKitPreset from '@harnesskit/react/tailwind';
+import harnessKitPreset from '@skillchat/harness-react/tailwind';
 
 export default {
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
-    './node_modules/@harnesskit/react/dist/**/*.{js,ts,jsx,tsx}',
+    './node_modules/@skillchat/harness-react/dist/**/*.{js,ts,jsx,tsx}',
   ],
   presets: [harnessKitPreset as Config],
   plugins: [typography],
@@ -117,7 +117,7 @@ export default {
 ### 4. 挂载聊天组件
 
 ```tsx
-import { HarnessChatProvider, HarnessChat } from '@harnesskit/react';
+import { HarnessChatProvider, HarnessChat } from '@skillchat/harness-react';
 
 export function App() {
   return (

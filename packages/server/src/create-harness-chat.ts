@@ -1,14 +1,14 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
-import { createMessageSchema, steerMessageSchema } from '@harnesskit/protocol';
+import { createMessageSchema, steerMessageSchema } from '@skillchat/harness-protocol';
 import { ChatOrchestrator } from './orchestrator/chat-orchestrator.js';
 import type { HarnessChatInstance, HarnessChatOptions, MountOptions } from './types.js';
-import type { StreamHub } from '@harnesskit/core';
-import { createOpenAIHarnessStack } from '@harnesskit/harness';
-import { OpenAIHarness, SessionContextStore } from '@harnesskit/harness';
+import type { StreamHub } from '@skillchat/harness-core';
+import { createOpenAIHarnessStack } from '@skillchat/harness';
+import { OpenAIHarness, SessionContextStore } from '@skillchat/harness';
 import type { AuthResolver } from './auth.js';
 import { anonymousAuth } from './auth.js';
-import type { ChatUser } from '@harnesskit/protocol';
+import type { ChatUser } from '@skillchat/harness-protocol';
 
 export const createHarnessChat = (options: HarnessChatOptions & { auth?: AuthResolver }): HarnessChatInstance => {
   const auth = options.auth ?? anonymousAuth;

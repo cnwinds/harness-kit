@@ -1,12 +1,12 @@
 {
-  "name": "@harnesskit/example-demo",
+  "name": "@skillchat/harness-example-demo",
   "private": true,
   "version": "0.1.1",
   "description": "Full-stack HarnessKit demo — server + React client",
   "scripts": {
     "dev": "concurrently -n server,client -c blue,green \"npm run dev:server\" \"npm run dev:client\"",
-    "dev:server": "npm --workspace @harnesskit/example-minimal-server run dev",
-    "dev:client": "npm --workspace @harnesskit/example-minimal-react run dev"
+    "dev:server": "npm --workspace @skillchat/harness-example-minimal-server run dev",
+    "dev:client": "npm --workspace @skillchat/harness-example-minimal-react run dev"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"

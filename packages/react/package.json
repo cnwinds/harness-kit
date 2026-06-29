@@ -1,6 +1,6 @@
 {
 
-  "name": "@harnesskit/react",
+  "name": "@skillchat/harness-react",
 
   "version": "0.1.1",
 
@@ -52,7 +52,7 @@
 
   "dependencies": {
 
-    "@harnesskit/protocol": "0.1.1",
+    "@skillchat/harness-protocol": "0.1.1",
 
     "@microsoft/fetch-event-source": "^2.0.1",
 

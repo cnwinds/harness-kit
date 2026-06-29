@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { FileRecord } from '@harnesskit/protocol';
+import type { FileRecord } from '@skillchat/harness-protocol';
 import type { HarnessConfig } from '../config.js';
 import { Semaphore } from './semaphore.js';
 import { SessionRunner } from './session-runner.js';

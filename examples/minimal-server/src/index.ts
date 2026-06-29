@@ -9,7 +9,7 @@
 import './load-env.js';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
-import { createHarnessChatBootstrap } from '@harnesskit/server';
+import { createHarnessChatBootstrap } from '@skillchat/harness-server';
 
 const app = Fastify({ logger: true });
 await app.register(cors, { origin: true, credentials: true });

@@ -1,5 +1,5 @@
-import type { StoredEvent } from '@harnesskit/protocol';
-import type { HarnessConfig } from '@harnesskit/core';
+import type { StoredEvent } from '@skillchat/harness-protocol';
+import type { HarnessConfig } from '@skillchat/harness-core';
 import type { SessionContextState } from './session-context-store.js';
 
 export type ResponsesInputTextPart = {

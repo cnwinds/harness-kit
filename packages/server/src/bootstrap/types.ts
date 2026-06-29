@@ -1,4 +1,4 @@
-import type { HarnessConfig } from '@harnesskit/core';
+import type { HarnessConfig } from '@skillchat/harness-core';
 import type { AuthResolver } from '../auth.js';
 
 export type HarnessChatBootstrapOptions = {

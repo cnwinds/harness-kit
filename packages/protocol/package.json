@@ -1,5 +1,5 @@
 {
-  "name": "@harnesskit/protocol",
+  "name": "@skillchat/harness-protocol",
   "version": "0.1.1",
   "description": "HarnessKit cross-platform types, Zod schemas, and SSE event contract",
   "type": "module",

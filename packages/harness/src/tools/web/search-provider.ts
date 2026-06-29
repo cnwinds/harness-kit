@@ -1,4 +1,4 @@
-import type { HarnessConfig } from '@harnesskit/core';
+import type { HarnessConfig } from '@skillchat/harness-core';
 import type { FetchPageText, SearchProvider, WebSearchProviderId } from './search-types.js';
 import { createBraveSearchProvider } from './providers/brave.js';
 import { createSerperSearchProvider } from './providers/serper.js';

@@ -5,9 +5,9 @@ const root = path.resolve(import.meta.dirname, '..');
 
 const files = {
   'packages/harness/src/openai-harness.test.ts': `import { afterEach, describe, expect, it, vi } from 'vitest';
-import { defaultHarnessConfig } from '@harnesskit/core';
+import { defaultHarnessConfig } from '@skillchat/harness-core';
 
-vi.mock('@harnesskit/core', async (importOriginal) => {
+vi.mock('@skillchat/harness-core', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -65,7 +65,7 @@ describe('OpenAIHarness', () => {
 });
 `,
   'packages/server/src/orchestrator/chat-orchestrator.test.ts': `import { describe, expect, it, vi } from 'vitest';
-import { defaultHarnessConfig } from '@harnesskit/core';
+import { defaultHarnessConfig } from '@skillchat/harness-core';
 import { ChatOrchestrator } from './chat-orchestrator.js';
 
 const createOrchestrator = () => {

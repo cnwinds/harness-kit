@@ -7,7 +7,7 @@ import type {
   TurnKind,
   TurnPhase,
   TurnStatus,
-} from '@harnesskit/protocol';
+} from '@skillchat/harness-protocol';
 
 export type TurnUserContext = {
   id: string;

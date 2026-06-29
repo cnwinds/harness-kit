@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import type { RuntimeInputPreview } from '@harnesskit/protocol';
+import type { RuntimeInputPreview } from '@skillchat/harness-protocol';
 
 export interface FollowUpQueueProps {
   queue: RuntimeInputPreview[];

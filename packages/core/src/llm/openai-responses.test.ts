@@ -1,4 +1,4 @@
-﻿import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { streamOpenAIResponsesText } from './openai-responses.js';
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

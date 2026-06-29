@@ -1,5 +1,5 @@
-﻿import { describe, expect, it } from 'vitest';
-import type { StoredEvent } from '@harnesskit/protocol';
+import { describe, expect, it } from 'vitest';
+import type { StoredEvent } from '@skillchat/harness-protocol';
 import { buildRenderableTimeline, buildTimelineItems } from './timeline.js';
 
 describe('buildTimelineItems', () => {

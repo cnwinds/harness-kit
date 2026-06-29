@@ -22,8 +22,8 @@ import type {
   FileRecord,
   StoredEvent,
   TokenUsageStats,
-} from '@harnesskit/protocol';
-import { sanitizeAssistantVisibleText } from '@harnesskit/protocol';
+} from '@skillchat/harness-protocol';
+import { sanitizeAssistantVisibleText } from '@skillchat/harness-protocol';
 import { cn } from '../lib/cn.js';
 import { formatBytes } from '../lib/utils.js';
 import type { ToolTraceDisplayEvent, ToolTraceGroupDisplayEvent } from '../lib/timeline.js';

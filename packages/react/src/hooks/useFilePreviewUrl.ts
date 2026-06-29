@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { FileRecord } from '@harnesskit/protocol';
+import type { FileRecord } from '@skillchat/harness-protocol';
 import { useHarnessChatContext } from '../provider.js';
 
 export const useFilePreviewUrl = (

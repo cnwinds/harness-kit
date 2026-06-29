@@ -1,4 +1,4 @@
-import type { FileBucket, FileRecord, FileVisibility, SessionFileContext } from '@harnesskit/protocol';
+import type { FileBucket, FileRecord, FileVisibility, SessionFileContext } from '@skillchat/harness-protocol';
 
 export type MultipartFileLike = {
   filename: string;

@@ -16,18 +16,18 @@ npm run dev:minimal-react   # http://localhost:5173
 | 文件 | 说明 |
 |------|------|
 | [src/main.tsx](./src/main.tsx) | Provider + HarnessChat 挂载 |
-| [tailwind.config.ts](./tailwind.config.ts) | `@harnesskit/react/tailwind` preset |
+| [tailwind.config.ts](./tailwind.config.ts) | `@skillchat/harness-react/tailwind` preset |
 | [vite.config.ts](./vite.config.ts) | `/api/chat` 代理到 :3000 |
 
 ## 依赖清单
 
 使用 `<HarnessChat />` 开箱 UI 需要：
 
-**dependencies：** `@harnesskit/react`、`@tanstack/react-query`、`lucide-react`、`react-markdown`、`remark-gfm`
+**dependencies：** `@skillchat/harness-react`、`@tanstack/react-query`、`lucide-react`、`react-markdown`、`remark-gfm`
 
 **devDependencies：** `tailwindcss`、`@tailwindcss/typography`、`postcss`、`autoprefixer`
 
-另需在入口引入 `@harnesskit/react/theme.css`。
+另需在入口引入 `@skillchat/harness-react/theme.css`。
 
 ## 文档
 

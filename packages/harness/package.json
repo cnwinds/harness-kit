@@ -1,5 +1,5 @@
 {
-  "name": "@harnesskit/harness",
+  "name": "@skillchat/harness",
   "version": "0.1.1",
   "description": "HarnessKit LLM harness engine — OpenAI Responses agent loop",
   "type": "module",
@@ -21,8 +21,8 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@harnesskit/protocol": "0.1.1",
-    "@harnesskit/core": "0.1.1",
+    "@skillchat/harness-protocol": "0.1.1",
+    "@skillchat/harness-core": "0.1.1",
     "nanoid": "^5.1.6",
     "zod": "^4.1.12",
     "mime-types": "^3.0.1",

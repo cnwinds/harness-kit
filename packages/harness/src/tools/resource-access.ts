@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { HarnessConfig } from '@harnesskit/core';
-import { assertPathInside } from '@harnesskit/core';
-import { getSessionOutputsRoot, getSessionRoot, getUserRoot } from '@harnesskit/core';
+import type { HarnessConfig } from '@skillchat/harness-core';
+import { assertPathInside } from '@skillchat/harness-core';
+import { getSessionOutputsRoot, getSessionRoot, getUserRoot } from '@skillchat/harness-core';
 
 export type WorkspaceRootName = 'session' | 'workspace';
 

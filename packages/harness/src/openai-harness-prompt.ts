@@ -1,6 +1,6 @@
-import type { SessionFileContext, StoredEvent } from '@harnesskit/protocol';
-import type { HarnessConfig } from '@harnesskit/core';
-import type { SkillDescriptor } from '@harnesskit/core';
+import type { SessionFileContext, StoredEvent } from '@skillchat/harness-protocol';
+import type { HarnessConfig } from '@skillchat/harness-core';
+import type { SkillDescriptor } from '@skillchat/harness-core';
 import type { SessionContextState } from './session-context-store.js';
 import {
   buildDynamicFileSection,

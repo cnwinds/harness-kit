@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
-import { turnKindSchema, turnPhaseSchema } from '@harnesskit/protocol';
+import { turnKindSchema, turnPhaseSchema } from '@skillchat/harness-protocol';
 import type { PersistedRuntimeState, RuntimePersistence } from './turn-types.js';
 
 const persistedInputSchema = z.object({

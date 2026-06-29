@@ -1,5 +1,5 @@
 import { Download, FileIcon } from 'lucide-react';
-import type { FileRecord } from '@harnesskit/protocol';
+import type { FileRecord } from '@skillchat/harness-protocol';
 import { useFilePreviewUrl } from '../../hooks/useFilePreviewUrl.js';
 import { imagePreviewActions } from '../../hooks/useImagePreview.js';
 import { cn } from '../../lib/cn.js';

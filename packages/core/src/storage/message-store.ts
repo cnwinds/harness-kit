@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import type { StoredEvent } from '@harnesskit/protocol';
+import type { StoredEvent } from '@skillchat/harness-protocol';
 import type { HarnessConfig } from '../config.js';
 import { getSessionMessagesPath } from './paths.js';
 

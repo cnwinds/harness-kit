@@ -1,9 +1,9 @@
-import type { HarnessConfig, ImageProviderId, WebSearchProviderId } from '@harnesskit/core';
+import type { HarnessConfig, ImageProviderId, WebSearchProviderId } from '@skillchat/harness-core';
 import {
   parseProviderListFromEnv,
   resolveNativeToolsPolicy,
-} from '@harnesskit/core';
-import { IMAGE_PROVIDER_IDS, WEB_SEARCH_PROVIDER_IDS } from '@harnesskit/core';
+} from '@skillchat/harness-core';
+import { IMAGE_PROVIDER_IDS, WEB_SEARCH_PROVIDER_IDS } from '@skillchat/harness-core';
 
 export const supportsOpenAINativeResponsesTools = (baseUrl: string) => {
   const normalized = baseUrl.replace(/\/+$/, '');
@@ -144,7 +144,7 @@ export const resolveProviderCapabilities = (config: HarnessConfig): ProviderCapa
   };
 };
 
-/** @deprecated Use resolveNativeToolsPolicy from @harnesskit/core */
+/** @deprecated Use resolveNativeToolsPolicy from @skillchat/harness-core */
 export const resolveApiWebSearchMode = (
   baseUrl: string,
   configured: 'disabled' | 'cached' | 'live',

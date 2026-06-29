@@ -39,7 +39,7 @@ examples/
 
 ```typescript
 import Fastify from 'fastify';
-import { createHarnessChatBootstrap } from '@harnesskit/server';
+import { createHarnessChatBootstrap } from '@skillchat/harness-server';
 
 const app = Fastify();
 const chat = createHarnessChatBootstrap({
@@ -65,8 +65,8 @@ await app.listen({ port: 3000 });
 ## 前端对接
 
 ```tsx
-import { HarnessChatProvider, HarnessChat } from '@harnesskit/react';
-import '@harnesskit/react/theme.css';
+import { HarnessChatProvider, HarnessChat } from '@skillchat/harness-react';
+import '@skillchat/harness-react/theme.css';
 
 export function App() {
   return (

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import path from 'node:path';
-import type { SessionFileContext } from '@harnesskit/protocol';
-import type { RunnerManager } from '@harnesskit/core';
-import type { SkillDescriptor } from '@harnesskit/core';
+import type { SessionFileContext } from '@skillchat/harness-protocol';
+import type { RunnerManager } from '@skillchat/harness-core';
+import type { SkillDescriptor } from '@skillchat/harness-core';
 import type { AssistantToolService, ExecutedAssistantToolResult } from './assistant-tool-service.js';
 import {
   findAssistantToolDefinition,

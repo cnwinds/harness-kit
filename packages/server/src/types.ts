@@ -1,13 +1,13 @@
 import type { FastifyInstance } from 'fastify';
-import type { HarnessConfig } from '@harnesskit/core';
+import type { HarnessConfig } from '@skillchat/harness-core';
 import type {
   FileServiceLike,
   InstalledSkillStoreLike,
   SessionServiceLike,
   SkillRegistryLike,
 } from './adapters.js';
-import type { StreamHub, MessageStore } from '@harnesskit/core';
-import { OpenAIHarness, SessionContextStore } from '@harnesskit/harness';
+import type { StreamHub, MessageStore } from '@skillchat/harness-core';
+import { OpenAIHarness, SessionContextStore } from '@skillchat/harness';
 import { ChatOrchestrator } from './orchestrator/chat-orchestrator.js';
 
 export type HarnessChatOptions = {
@@ -33,4 +33,4 @@ export type HarnessChatInstance = {
 };
 
 export type { AuthResolver } from './auth.js';
-export type { HarnessConfig } from '@harnesskit/core';
+export type { HarnessConfig } from '@skillchat/harness-core';

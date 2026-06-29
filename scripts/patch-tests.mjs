@@ -7,8 +7,8 @@ const files = [
   {
     path: 'packages/harness/src/openai-harness.test.ts',
     replacements: [
-      ["import type { FileRecord } from '@skillchat/shared';", "import type { FileRecord } from '@harnesskit/protocol';"],
-      ["import type { AppConfig } from '../../config/env.js';", "import { defaultHarnessConfig, type HarnessConfig } from '@harnesskit/core';"],
+      ["import type { FileRecord } from '@skillchat/shared';", "import type { FileRecord } from '@skillchat/harness-protocol';"],
+      ["import type { AppConfig } from '../../config/env.js';", "import { defaultHarnessConfig, type HarnessConfig } from '@skillchat/harness-core';"],
       ['Partial<AppConfig>', 'Partial<HarnessConfig>'],
       [': AppConfig => ({', ': HarnessConfig => defaultHarnessConfig({'],
     ],
@@ -43,7 +43,7 @@ const pdfSkill = {
     path: 'packages/server/src/orchestrator/chat-orchestrator.test.ts',
     replacements: [
       ["import { ChatService } from './chat-service.js';", "import { ChatOrchestrator } from './chat-orchestrator.js';"],
-      ["import type { AppConfig } from '../../config/env.js';", "import { defaultHarnessConfig, type HarnessConfig } from '@harnesskit/core';"],
+      ["import type { AppConfig } from '../../config/env.js';", "import { defaultHarnessConfig, type HarnessConfig } from '@skillchat/harness-core';"],
       ['new ChatService(', 'new ChatOrchestrator('],
       ["describe('ChatService harness-only flow'", "describe('ChatOrchestrator harness-only flow'"],
       ['config?: AppConfig', 'config?: HarnessConfig'],

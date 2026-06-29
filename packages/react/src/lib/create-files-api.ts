@@ -1,4 +1,4 @@
-import type { FileRecord } from '@harnesskit/protocol';
+import type { FileRecord } from '@skillchat/harness-protocol';
 import type { FileApiLike } from '../file-api-types.js';
 
 export const createHarnessFilesApi = (args: {

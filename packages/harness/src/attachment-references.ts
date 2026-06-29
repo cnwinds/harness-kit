@@ -1,4 +1,4 @@
-import type { FileRecord } from '@harnesskit/protocol';
+import type { FileRecord } from '@skillchat/harness-protocol';
 
 const toSessionRelativePath = (relativePath: string) => {
   const normalized = relativePath.replace(/\\/g, '/');

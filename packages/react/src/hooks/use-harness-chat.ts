@@ -6,7 +6,7 @@ import type {
   SessionSummary,
   SSEEventName,
   StoredEvent,
-} from '@harnesskit/protocol';
+} from '@skillchat/harness-protocol';
 import { useHarnessChatContext } from '../provider.js';
 import { applySSEEvent, useStreamStore, type StreamStatus } from '../store/stream-store.js';
 

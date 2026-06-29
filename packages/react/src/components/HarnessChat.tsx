@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { FileRecord, SessionRuntimeSnapshot, SessionSummary, StoredEvent } from '@harnesskit/protocol';
+import type { FileRecord, SessionRuntimeSnapshot, SessionSummary, StoredEvent } from '@skillchat/harness-protocol';
 import { useHarnessChatContext } from '../provider.js';
 import { useComposerFileUpload } from '../hooks/useComposerFileUpload.js';
 import { useSessionStream } from '../hooks/useSessionStream.js';

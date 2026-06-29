@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Publish @harnesskit/* packages to npm in dependency order.
+ * Publish @skillchat/harness-* packages to npm in dependency order.
  *
  * Usage:
  *   npm run publish:packages
@@ -19,11 +19,11 @@ const dryRun = args.includes('--dry-run');
 const tagArg = args.find((arg) => arg.startsWith('--tag='))?.slice('--tag='.length);
 
 const packages = [
-  '@harnesskit/protocol',
-  '@harnesskit/core',
-  '@harnesskit/harness',
-  '@harnesskit/server',
-  '@harnesskit/react',
+  '@skillchat/harness-protocol',
+  '@skillchat/harness-core',
+  '@skillchat/harness',
+  '@skillchat/harness-server',
+  '@skillchat/harness-react',
 ];
 
 const publishRegistry = process.env.NPM_PUBLISH_REGISTRY ?? 'https://registry.npmjs.org';

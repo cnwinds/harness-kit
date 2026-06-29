@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createOpenAIHarnessStack } from './factory.js';
-import { defaultHarnessConfig } from '@harnesskit/core';
+import { defaultHarnessConfig } from '@skillchat/harness-core';
 
 describe('createOpenAIHarnessStack', () => {
   it('wires runner, tools, image service, and harness together', () => {

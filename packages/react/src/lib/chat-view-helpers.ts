@@ -1,4 +1,4 @@
-import type { ThinkingEvent } from '@harnesskit/protocol';
+import type { ThinkingEvent } from '@skillchat/harness-protocol';
 import type { TimelineItem } from './timeline.js';
 import type { SessionStreamState } from '../store/stream-ui-store.js';
 

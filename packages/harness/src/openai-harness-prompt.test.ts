@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultHarnessConfig } from '@harnesskit/core';
+import { defaultHarnessConfig } from '@skillchat/harness-core';
 import { buildOpenAIHarnessInstructions } from './openai-harness-prompt.js';
 
 const createConfig = () => defaultHarnessConfig({

@@ -1,4 +1,4 @@
-import type { SSEvent } from '@harnesskit/protocol';
+import type { SSEvent } from '@skillchat/harness-protocol';
 
 type Subscriber = (event: SSEvent) => void;
 

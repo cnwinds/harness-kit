@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { PersistedRuntimeState, RuntimePersistence } from './turn-types.js';
 import { SessionTurnRuntime } from './session-turn-runtime.js';
 

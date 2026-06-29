@@ -4,7 +4,7 @@
 
 ## 1. 命名与定位
 
-**HarnessKit**（`@harnesskit/*`）— AI Agent Harness 聊天工具包。
+**HarnessKit**（`@skillchat/harness-*`）— AI Agent Harness 聊天工具包。
 
 - **Harness**：强调 LLM Agent Loop（采样 → 工具 → 回填 → 继续）而非简单 Chat Completion
 - **Kit**：模块化组合，可按需引入 protocol / core / harness / server / react
@@ -15,7 +15,7 @@
 | 目标 | 指标 |
 |---|---|
 | 接入成本 | 后端 ≤ 5 行、前端 ≤ 3 行完成 MVP |
-| 协议稳定 | `@harnesskit/protocol`  semver 独立，Breaking 变更 major bump |
+| 协议稳定 | `@skillchat/harness-protocol`  semver 独立，Breaking 变更 major bump |
 | 可扩展 | Tool、Skill、Persistence、Auth 均可插件替换 |
 | 主题可配 | React 组件通过 CSS 变量 + preset 支持品牌配色（见 [THEMING.md](./THEMING.md)） |
 | 框架无关 | Core/Harness 零框架依赖；Server 默认 Fastify；React 可选 |
@@ -37,21 +37,21 @@
 └───────────────┬─────────────────────────────┬───────────────┘
                 │                             │
     ┌───────────▼──────────┐      ┌───────────▼──────────┐
-    │  @harnesskit/server  │      │  @harnesskit/react   │
+    │  @skillchat/harness-server  │      │  @skillchat/harness-react   │
     │  Fastify 路由 + DI   │      │  Hooks + UI 组件       │
     └───────────┬──────────┘      └───────────┬──────────┘
                 │                             │
                 └──────────────┬──────────────┘
                                │
                 ┌──────────────▼──────────────┐
-                │    @harnesskit/protocol     │
+                │    @skillchat/harness-protocol     │
                 │  类型 · Schema · SSE 常量    │
                 └──────────────┬──────────────┘
                                │
          ┌─────────────────────┼─────────────────────┐
          │                     │                     │
 ┌────────▼────────┐  ┌─────────▼────────┐  ┌────────▼────────┐
-│ @harnesskit/core│  │@harnesskit/harness│  │  Adapters       │
+│ @skillchat/harness-core│  │@skillchat/harness│  │  Adapters       │
 │ Turn Runtime    │  │ LLM Agent Loop   │  │  (File, Skill,  │
 │ StreamHub       │  │ Tool Catalog     │  │   Script, Auth) │
 └─────────────────┘  └──────────────────┘  └─────────────────┘
@@ -103,7 +103,7 @@ StreamHub **不缓冲**离线事件 — 重连后必须 REST 对账。
 大多数项目使用 Bootstrap 即可；已有完整 DI 时用底层 `createHarnessChat`。
 
 ```typescript
-import { createHarnessChatBootstrap } from '@harnesskit/server';
+import { createHarnessChatBootstrap } from '@skillchat/harness-server';
 
 const chat = createHarnessChatBootstrap({
   // 必需
@@ -245,7 +245,7 @@ react     ← protocol
 ```mermaid
 sequenceDiagram
   participant UI as React Client
-  participant API as @harnesskit/server
+  participant API as @skillchat/harness-server
   participant RT as TurnRuntime
   participant H as HarnessEngine
   participant LLM as OpenAI Responses
@@ -270,9 +270,9 @@ sequenceDiagram
 
 | Phase | 内容 | 状态 |
 |-------|------|------|
-| 1 | Monorepo、`@harnesskit/protocol` 契约 | ✅ |
+| 1 | Monorepo、`@skillchat/harness-protocol` 契约 | ✅ |
 | 2 | Turn Runtime、StreamHub、OpenAIHarness 迁移 | ✅ |
-| 3 | `@harnesskit/server` 路由、`@harnesskit/react` UI | ✅ |
+| 3 | `@skillchat/harness-server` 路由、`@skillchat/harness-react` UI | ✅ |
 | 4 | SkillChat 对接、删除重复代码 | ✅ |
 | 5 | 发布公共 npm（可选） | 待定 |
 

@@ -1,11 +1,11 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { nanoid } from 'nanoid';
-import type { FileBucket, FileRecord, FileVisibility, SessionFileContext } from '@harnesskit/protocol';
-import type { HarnessConfig } from '@harnesskit/core';
-import type { FileServiceLike, MultipartFileLike } from '@harnesskit/core';
-import { assertPathInside, sanitizeFilename, uniqueFileName } from '@harnesskit/core';
-import { getSessionOutputsRoot, getSessionUploadsRoot } from '@harnesskit/core';
+import type { FileBucket, FileRecord, FileVisibility, SessionFileContext } from '@skillchat/harness-protocol';
+import type { HarnessConfig } from '@skillchat/harness-core';
+import type { FileServiceLike, MultipartFileLike } from '@skillchat/harness-core';
+import { assertPathInside, sanitizeFilename, uniqueFileName } from '@skillchat/harness-core';
+import { getSessionOutputsRoot, getSessionUploadsRoot } from '@skillchat/harness-core';
 
 export class LocalFileService implements FileServiceLike {
   private readonly records = new Map<string, FileRecord>();

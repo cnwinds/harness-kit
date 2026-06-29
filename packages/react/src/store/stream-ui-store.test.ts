@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { SessionRuntimeSnapshot } from '@harnesskit/protocol';
+import type { SessionRuntimeSnapshot } from '@skillchat/harness-protocol';
 import { useStreamUiStore } from './stream-ui-store.js';
 
 const idleSnapshot = (sessionId: string): SessionRuntimeSnapshot => ({

@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { defaultHarnessConfig, ProviderPrefsStore, type HarnessConfig } from '@harnesskit/core';
+import { defaultHarnessConfig, ProviderPrefsStore, type HarnessConfig } from '@skillchat/harness-core';
 import { ImageGenerationOrchestrator } from '../image/image-orchestrator.js';
 import { OpenAIImageService } from '../openai-image-service.js';
 import { AssistantToolService, networkResolver } from './assistant-tool-service.js';

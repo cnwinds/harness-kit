@@ -1,5 +1,5 @@
 {
-  "name": "@harnesskit/core",
+  "name": "@skillchat/harness-core",
   "version": "0.1.1",
   "description": "HarnessKit turn runtime, stream hub, storage, and runner",
   "type": "module",
@@ -21,7 +21,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@harnesskit/protocol": "0.1.1",
+    "@skillchat/harness-protocol": "0.1.1",
     "nanoid": "^5.1.6",
     "zod": "^4.1.12"
   },

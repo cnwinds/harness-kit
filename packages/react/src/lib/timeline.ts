@@ -1,4 +1,4 @@
-import type { FileRecord, StoredEvent, ThinkingEvent } from '@harnesskit/protocol';
+import type { FileRecord, StoredEvent, ThinkingEvent } from '@skillchat/harness-protocol';
 
 type ToolTraceStatus = 'queued' | 'running' | 'success' | 'failed';
 

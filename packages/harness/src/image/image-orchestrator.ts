@@ -1,4 +1,4 @@
-import type { HarnessConfig, ProviderPrefsStore } from '@harnesskit/core';
+import type { HarnessConfig, ProviderPrefsStore } from '@skillchat/harness-core';
 import type { OpenAIImageService } from '../openai-image-service.js';
 import { buildImageProviderChain } from '../provider-capabilities.js';
 import { createConfiguredImageProvider } from './image-provider-registry.js';

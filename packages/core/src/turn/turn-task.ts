@@ -1,4 +1,4 @@
-import type { SessionFileContext, StoredEvent } from '@harnesskit/protocol';
+import type { SessionFileContext, StoredEvent } from '@skillchat/harness-protocol';
 import type { SessionContextState } from '../session-context-types.js';
 import type { RuntimeInput, TurnExecutionContext } from './turn-types.js';
 

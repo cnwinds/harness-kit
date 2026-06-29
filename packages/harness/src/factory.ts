@@ -1,6 +1,6 @@
-import type { HarnessConfig } from '@harnesskit/core';
-import type { FileServiceLike } from '@harnesskit/core';
-import { ProviderPrefsStore, RunnerManager } from '@harnesskit/core';
+import type { HarnessConfig } from '@skillchat/harness-core';
+import type { FileServiceLike } from '@skillchat/harness-core';
+import { ProviderPrefsStore, RunnerManager } from '@skillchat/harness-core';
 import { ImageGenerationOrchestrator } from './image/image-orchestrator.js';
 import { AssistantToolService, OpenAIHarness, OpenAIImageService } from './index.js';
 

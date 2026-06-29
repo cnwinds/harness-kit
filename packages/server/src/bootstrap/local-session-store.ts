@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { nanoid } from 'nanoid';
-import type { SessionSummary } from '@harnesskit/protocol';
-import { createSessionSchema } from '@harnesskit/protocol';
-import type { HarnessConfig } from '@harnesskit/core';
-import { ensureBaseDirectories, ensureSessionDirectories, ensureUserDirectories } from '@harnesskit/core';
+import type { SessionSummary } from '@skillchat/harness-protocol';
+import { createSessionSchema } from '@skillchat/harness-protocol';
+import type { HarnessConfig } from '@skillchat/harness-core';
+import { ensureBaseDirectories, ensureSessionDirectories, ensureUserDirectories } from '@skillchat/harness-core';
 import type { SessionServiceLike } from '../adapters.js';
 
 const DEFAULT_TITLE = '新会话';

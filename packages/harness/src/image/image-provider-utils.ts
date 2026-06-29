@@ -1,4 +1,4 @@
-import type { HarnessConfig } from '@harnesskit/core';
+import type { HarnessConfig } from '@skillchat/harness-core';
 import type { ImageProviderId } from './image-types.js';
 
 export type ImageProviderKind = 'openai' | 'zhipu' | 'bailian';

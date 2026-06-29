@@ -1,6 +1,6 @@
 # API 参考
 
-HarnessKit 服务端 HTTP + SSE 契约。类型定义以 `@harnesskit/protocol` 为准；本文描述默认 `createHarnessChatBootstrap` 挂载后的行为。
+HarnessKit 服务端 HTTP + SSE 契约。类型定义以 `@skillchat/harness-protocol` 为准；本文描述默认 `createHarnessChatBootstrap` 挂载后的行为。
 
 **相关文档：** [快速开始](./QUICKSTART.md) · [接入指南](./INTEGRATION.md)
 
@@ -343,13 +343,13 @@ StreamHub **不缓冲**断线期间的事件。客户端重连后必须：
 2. `GET .../runtime` — 拉取运行态
 3. 合并 timeline 后再订阅 SSE
 
-`@harnesskit/react` 的 `useSessionStream` 已内置此逻辑。
+`@skillchat/harness-react` 的 `useSessionStream` 已内置此逻辑。
 
 ---
 
 ## SSE 事件
 
-稳定契约定义于 `SSE_EVENT_NAMES`（`@harnesskit/protocol`）。Breaking 变更需 major version bump。
+稳定契约定义于 `SSE_EVENT_NAMES`（`@skillchat/harness-protocol`）。Breaking 变更需 major version bump。
 
 ### 生命周期
 
@@ -469,7 +469,7 @@ StreamHub **不缓冲**断线期间的事件。客户端重连后必须：
 | `file` | 文件附件 |
 | `error` | 错误消息 |
 
-完整字段见 `@harnesskit/protocol` 的 `types.ts`。
+完整字段见 `@skillchat/harness-protocol` 的 `types.ts`。
 
 #### `TextMessageEvent` 示例
 
@@ -536,7 +536,7 @@ import {
   createMessageSchema,
   createSessionSchema,
   steerMessageSchema,
-} from '@harnesskit/protocol';
+} from '@skillchat/harness-protocol';
 
 import type {
   StoredEvent,
@@ -547,7 +547,7 @@ import type {
   SSEEventName,
   TurnLifecyclePayload,
   TextDeltaPayload,
-} from '@harnesskit/protocol';
+} from '@skillchat/harness-protocol';
 ```
 
 Zod schema 可用于客户端请求校验；服务端路由已内置相同 schema。
@@ -558,7 +558,7 @@ Zod schema 可用于客户端请求校验；服务端路由已内置相同 schem
 
 ```typescript
 import { fetchEventSource } from '@microsoft/fetch-event-source';
-import type { SSEEventName, TextDeltaPayload } from '@harnesskit/protocol';
+import type { SSEEventName, TextDeltaPayload } from '@skillchat/harness-protocol';
 
 // 1. 建立 SSE
 await fetchEventSource('/api/chat/sessions/s1/stream', {

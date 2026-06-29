@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { defaultHarnessConfig } from '@harnesskit/core';
+import { defaultHarnessConfig } from '@skillchat/harness-core';
 
 type StreamEvent = { event: string; data: Record<string, unknown> };
 
@@ -9,7 +9,7 @@ let mockStreamEvents: StreamEvent[] = [
   { event: 'response.completed', data: {} },
 ];
 
-vi.mock('@harnesskit/core', async (importOriginal) => {
+vi.mock('@skillchat/harness-core', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,

@@ -18,7 +18,7 @@ import type {
   TurnPhase,
   TurnStatus,
   UserMessageCommittedPayload,
-} from '@harnesskit/protocol';
+} from '@skillchat/harness-protocol';
 
 export type StreamStatus = 'idle' | 'connecting' | 'open' | 'reconnecting' | 'error';
 

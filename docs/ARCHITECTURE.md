@@ -22,15 +22,15 @@
 SkillChat 的 `ChatService` 是最大耦合点 — 拆库时拆为：
 
 ```
-ChatOrchestrator (@harnesskit/server 内部)
-├── TurnRuntime          ← @harnesskit/core
-├── HarnessEngine        ← @harnesskit/harness
+ChatOrchestrator (@skillchat/harness-server 内部)
+├── TurnRuntime          ← @skillchat/harness-core
+├── HarnessEngine        ← @skillchat/harness
 ├── MessageStore         ← PersistenceBundle.messages
 ├── SessionStore         ← PersistenceBundle.sessions
 ├── FileContextProvider  ← adapter
 ├── SkillCatalogProvider ← adapter
 ├── ScriptExecutor       ← adapter
-├── StreamHub.publish    ← @harnesskit/core
+├── StreamHub.publish    ← @skillchat/harness-core
 └── AuthResolver         ← adapter
 ```
 
@@ -39,7 +39,7 @@ ChatOrchestrator (@harnesskit/server 内部)
 ### 自定义 Tool
 
 ```typescript
-import { defineTool, createHarnessChat } from '@harnesskit/server';
+import { defineTool, createHarnessChat } from '@skillchat/harness-server';
 
 const chat = createHarnessChat({
   llm: { apiKey: '...' },
@@ -57,7 +57,7 @@ const chat = createHarnessChat({
 ### 自定义 Harness Provider
 
 ```typescript
-import { createHarnessEngine, type HarnessProvider } from '@harnesskit/harness';
+import { createHarnessEngine, type HarnessProvider } from '@skillchat/harness';
 
 const anthropicProvider: HarnessProvider = {
   name: 'anthropic',

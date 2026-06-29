@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
-import type { StoredEvent, TextMessageEvent } from '@harnesskit/protocol';
+import type { StoredEvent, TextMessageEvent } from '@skillchat/harness-protocol';
 import { useHarnessChatContext } from '../provider.js';
 import { useStreamUiStore } from '../store/stream-ui-store.js';
 

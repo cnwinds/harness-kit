@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { FileRecord } from '@harnesskit/protocol';
-import type { HarnessConfig } from '@harnesskit/core';
-import type { FileServiceLike } from '@harnesskit/core';
+import type { FileRecord } from '@skillchat/harness-protocol';
+import type { HarnessConfig } from '@skillchat/harness-core';
+import type { FileServiceLike } from '@skillchat/harness-core';
 import type { ResponsesInputImagePart } from './openai-harness-context.js';
 
 type ImageOperation = 'generate' | 'edit';

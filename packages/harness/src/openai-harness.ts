@@ -1,11 +1,11 @@
-import type { FileRecord, SessionFileContext, StoredEvent, TurnConfig } from '@harnesskit/protocol';
-import type { HarnessConfig } from '@harnesskit/core';
-import { isOpenAIResponsesRecord, streamOpenAIResponsesEvents } from '@harnesskit/core';
-import { HarnessError, toHarnessError } from '@harnesskit/core';
-import type { TokenUsage } from '@harnesskit/core';
+import type { FileRecord, SessionFileContext, StoredEvent, TurnConfig } from '@skillchat/harness-protocol';
+import type { HarnessConfig } from '@skillchat/harness-core';
+import { isOpenAIResponsesRecord, streamOpenAIResponsesEvents } from '@skillchat/harness-core';
+import { HarnessError, toHarnessError } from '@skillchat/harness-core';
+import type { TokenUsage } from '@skillchat/harness-core';
 import type { AssistantToolService } from './tools/assistant-tool-service.js';
-import type { RunnerManager } from '@harnesskit/core';
-import type { SkillDescriptor } from '@harnesskit/core';
+import type { RunnerManager } from '@skillchat/harness-core';
+import type { SkillDescriptor } from '@skillchat/harness-core';
 import { OpenAIImageService } from './openai-image-service.js';
 import {
   buildAssistantToolCatalog,

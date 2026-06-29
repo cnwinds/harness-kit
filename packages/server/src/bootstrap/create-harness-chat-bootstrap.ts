@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import multipart from '@fastify/multipart';
-import type { ChatUser } from '@harnesskit/protocol';
-import { MessageStore, StreamHub } from '@harnesskit/core';
+import type { ChatUser } from '@skillchat/harness-protocol';
+import { MessageStore, StreamHub } from '@skillchat/harness-core';
 import { createHarnessChat } from '../create-harness-chat.js';
 import type { MountOptions } from '../types.js';
 import { anonymousAuth, type AuthResolver } from '../auth.js';

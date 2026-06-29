@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { defaultHarnessConfig } from '@harnesskit/core';
+import { defaultHarnessConfig } from '@skillchat/harness-core';
 import { ChatOrchestrator } from './chat-orchestrator.js';
 
 const createOrchestrator = () => {

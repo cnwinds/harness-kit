@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import type { ChatUser } from '@harnesskit/protocol';
-import type { HarnessConfig } from '@harnesskit/core';
+import type { ChatUser } from '@skillchat/harness-protocol';
+import type { HarnessConfig } from '@skillchat/harness-core';
 import { hydrateFileRecordById } from './hydrate-file-records.js';
 import type { LocalFileService } from './local-file-service.js';
 import type { LocalSessionStore } from './local-session-store.js';

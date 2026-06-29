@@ -1,5 +1,5 @@
-import type { HarnessConfig } from '@harnesskit/core';
-import { isOpenAIResponsesRecord, streamOpenAIResponsesEvents } from '@harnesskit/core';
+import type { HarnessConfig } from '@skillchat/harness-core';
+import { isOpenAIResponsesRecord, streamOpenAIResponsesEvents } from '@skillchat/harness-core';
 import { buildSearchQueries } from '../query-planner.js';
 import { normalizeWhitespace } from '../html-utils.js';
 import type { WebSearchToolInput, WebSearchToolResult } from '../search-types.js';

@@ -3,7 +3,7 @@ import {
   defaultHarnessConfig,
   parseNativeToolsPolicy,
   type HarnessConfig,
-} from '@harnesskit/core';
+} from '@skillchat/harness-core';
 import type { HarnessChatBootstrapOptions } from './types.js';
 
 const readEnv = (key: string) => {

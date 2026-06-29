@@ -1,5 +1,5 @@
 {
-  "name": "@harnesskit/server",
+  "name": "@skillchat/harness-server",
   "version": "0.1.1",
   "description": "HarnessKit Fastify adapter — createHarnessChat() one-line mount",
   "type": "module",
@@ -21,9 +21,9 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@harnesskit/protocol": "0.1.1",
-    "@harnesskit/core": "0.1.1",
-    "@harnesskit/harness": "0.1.1",
+    "@skillchat/harness-protocol": "0.1.1",
+    "@skillchat/harness-core": "0.1.1",
+    "@skillchat/harness": "0.1.1",
     "@fastify/multipart": "^9.0.0",
     "fastify": "^5.0.0",
     "nanoid": "^5.1.6",

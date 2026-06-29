@@ -2,7 +2,7 @@ import path from 'node:path';
 import readline from 'node:readline';
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import type { FileVisibility } from '@harnesskit/protocol';
+import type { FileVisibility } from '@skillchat/harness-protocol';
 import type { HarnessConfig } from '../config.js';
 import { assertPathInside, listFilesRecursively } from '../storage/fs-utils.js';
 import {

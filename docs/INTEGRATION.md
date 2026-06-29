@@ -19,7 +19,7 @@
 默认 `AnonymousAuthResolver`（单用户 demo）。生产环境：
 
 ```typescript
-import type { AuthResolver } from '@harnesskit/server';
+import type { AuthResolver } from '@skillchat/harness-server';
 
 const jwtAuth: AuthResolver = {
   async resolve(request) {
@@ -43,7 +43,7 @@ createHarnessChatBootstrap({
 ## Skill 集成
 
 ```typescript
-import type { SkillCatalogProvider } from '@harnesskit/core';
+import type { SkillCatalogProvider } from '@skillchat/harness-core';
 
 const mySkills: SkillCatalogProvider = {
   async listAvailable(userId) {
@@ -79,8 +79,8 @@ await chat.send('自动', { mode: 'auto' });           // 默认：能 steer 则
 
 ```tsx
 import { useState } from 'react';
-import { HarnessChatProvider, useHarnessChat, MessageItem, Composer } from '@harnesskit/react';
-import '@harnesskit/react/theme.css';
+import { HarnessChatProvider, useHarnessChat, MessageItem, Composer } from '@skillchat/harness-react';
+import '@skillchat/harness-react/theme.css';
 
 export function App() {
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -136,10 +136,10 @@ function ChatPage({
 
 ## SSE 事件处理（自定义客户端）
 
-若不使用 `@harnesskit/react`，可直接消费 SSE：
+若不使用 `@skillchat/harness-react`，可直接消费 SSE：
 
 ```typescript
-import { type SSEEventName } from '@harnesskit/protocol';
+import { type SSEEventName } from '@skillchat/harness-protocol';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 await fetchEventSource(`/api/chat/sessions/${sessionId}/stream`, {
@@ -170,7 +170,7 @@ SSE 事件类型与 payload 见 [API 参考 — SSE 事件](./API.md#sse-事件)
 已有完整依赖注入（自定义 MessageStore、Orchestrator 等）时使用：
 
 ```typescript
-import { createHarnessChat } from '@harnesskit/server';
+import { createHarnessChat } from '@skillchat/harness-server';
 
 const chat = createHarnessChat({
   llm: { apiKey: process.env.OPENAI_API_KEY! },

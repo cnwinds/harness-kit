@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { FileRecord } from '@harnesskit/protocol';
+import type { FileRecord } from '@skillchat/harness-protocol';
 
 export interface ImagePreviewTarget {
   id: string;

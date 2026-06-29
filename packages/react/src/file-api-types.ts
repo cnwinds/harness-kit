@@ -1,4 +1,4 @@
-import type { FileRecord } from '@harnesskit/protocol';
+import type { FileRecord } from '@skillchat/harness-protocol';
 
 export type FileApiLike = {
   fetchFileBlob: (fileId: string) => Promise<Blob>;
