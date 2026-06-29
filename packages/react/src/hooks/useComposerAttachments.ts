@@ -5,10 +5,13 @@ import type { FileRecord } from '@harnesskit/protocol';
 export interface ComposerAttachment {
   localId: string;
   fileId?: string;
+  file?: FileRecord;
   displayName: string;
   mimeType: string | null;
   size: number;
   status: 'uploading' | 'uploaded';
+  /** Local blob URL for instant thumbnail preview before / without server fetch */
+  previewUrl?: string;
 }
 
 interface ComposerAttachmentsState {
@@ -25,14 +28,34 @@ interface ComposerAttachmentsState {
 export const createComposerAttachmentId = () =>
   `attachment_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
+export const revokeComposerAttachmentPreview = (attachment: ComposerAttachment) => {
+  if (attachment.previewUrl?.startsWith('blob:')) {
+    URL.revokeObjectURL(attachment.previewUrl);
+  }
+};
+
+const revokeComposerAttachments = (attachments: ComposerAttachment[]) => {
+  for (const attachment of attachments) {
+    revokeComposerAttachmentPreview(attachment);
+  }
+};
+
 const useComposerAttachmentsStore = create<ComposerAttachmentsState>((set) => ({
   bySession: {},
   setForSession: (sessionId, updater) =>
     set((state) => {
-      const next = updater(state.bySession[sessionId] ?? []);
+      const previous = state.bySession[sessionId] ?? [];
+      const next = updater(previous);
       if (next.length === 0) {
+        revokeComposerAttachments(previous);
         const { [sessionId]: _removed, ...rest } = state.bySession;
         return { bySession: rest };
+      }
+      const nextIds = new Set(next.map((item) => item.localId));
+      for (const item of previous) {
+        if (!nextIds.has(item.localId)) {
+          revokeComposerAttachmentPreview(item);
+        }
       }
       return { bySession: { ...state.bySession, [sessionId]: next } };
     }),
@@ -41,6 +64,7 @@ const useComposerAttachmentsStore = create<ComposerAttachmentsState>((set) => ({
       if (!(sessionId in state.bySession)) {
         return state;
       }
+      revokeComposerAttachments(state.bySession[sessionId] ?? []);
       const { [sessionId]: _removed, ...rest } = state.bySession;
       return { bySession: rest };
     }),
@@ -62,6 +86,8 @@ const useComposerAttachmentsStore = create<ComposerAttachmentsState>((set) => ({
       return { bySession: { ...state.bySession, [sessionId]: [...current, next] } };
     }),
 }));
+
+export const getComposerAttachmentsState = () => useComposerAttachmentsStore.getState();
 
 /**
  * Hook returning the composer attachments scoped to the active session,

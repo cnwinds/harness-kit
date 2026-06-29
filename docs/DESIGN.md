@@ -8,7 +8,7 @@
 
 - **Harness**：强调 LLM Agent Loop（采样 → 工具 → 回填 → 继续）而非简单 Chat Completion
 - **Kit**：模块化组合，可按需引入 protocol / core / harness / server / react
-- **一行接入**：`createHarnessChat()` + `<HarnessChat />` 即可跑通完整聊天链路
+- **一行接入**：`createHarnessChatBootstrap()` + `<HarnessChat />` 即可跑通完整聊天链路
 
 ### 设计目标
 
@@ -98,12 +98,14 @@ StreamHub **不缓冲**离线事件 — 重连后必须 REST 对账。
 
 ## 4. 公共 API 设计
 
-### 4.1 服务端 — `createHarnessChat`
+### 4.1 服务端 — `createHarnessChatBootstrap`（推荐）
+
+大多数项目使用 Bootstrap 即可；已有完整 DI 时用底层 `createHarnessChat`。
 
 ```typescript
-import { createHarnessChat } from '@harnesskit/server';
+import { createHarnessChatBootstrap } from '@harnesskit/server';
 
-const chat = createHarnessChat({
+const chat = createHarnessChatBootstrap({
   // 必需
   llm: {
     apiKey: string;
@@ -262,31 +264,17 @@ sequenceDiagram
 
 ## 7. 实施路线
 
-### Phase 1 — 契约与骨架（当前）
+> **当前实施状态**见 [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)（2026-06-27 更新：Phase 1–4 已完成，SkillChat 已接入）。
 
-- [x] Monorepo 脚手架
-- [x] `@harnesskit/protocol` 类型与 Schema
-- [x] 各包公共 API 接口定义
-- [ ] 从 SkillChat 迁移 protocol 完整类型
+以下为原始设计阶段的里程碑，保留作历史参考：
 
-### Phase 2 — 核心迁移
-
-- [ ] 迁移 `SessionTurnRuntime` → `@harnesskit/core`
-- [ ] 迁移 `StreamHub` → `@harnesskit/core`
-- [ ] 迁移 `OpenAIHarness` → `@harnesskit/harness`
-- [ ] 单元测试覆盖 Turn 状态机
-
-### Phase 3 — 适配器
-
-- [ ] `@harnesskit/server` Fastify 路由实现
-- [ ] 默认 File/JSONL Persistence
-- [ ] `@harnesskit/react` SSE + Store
-
-### Phase 4 — SkillChat 对接
-
-- [ ] SkillChat 改为依赖 `@harnesskit/*`
-- [ ] 应用层保留 Auth/Market/Admin
-- [ ] 发布 npm（可选 private registry）
+| Phase | 内容 | 状态 |
+|-------|------|------|
+| 1 | Monorepo、`@harnesskit/protocol` 契约 | ✅ |
+| 2 | Turn Runtime、StreamHub、OpenAIHarness 迁移 | ✅ |
+| 3 | `@harnesskit/server` 路由、`@harnesskit/react` UI | ✅ |
+| 4 | SkillChat 对接、删除重复代码 | ✅ |
+| 5 | 发布公共 npm（可选） | 待定 |
 
 ---
 

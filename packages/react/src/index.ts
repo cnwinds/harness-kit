@@ -20,6 +20,7 @@ export {
   useComposerAttachments,
   composerAttachmentsActions,
   createComposerAttachmentId,
+  revokeComposerAttachmentPreview,
 } from './hooks/useComposerAttachments.js';
 export type { ComposerAttachment } from './hooks/useComposerAttachments.js';
 

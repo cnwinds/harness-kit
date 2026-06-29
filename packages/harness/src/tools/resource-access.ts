@@ -37,7 +37,7 @@ const DEFAULT_IGNORED_NAMES = new Set([
   '__pycache__',
 ]);
 
-const textFilePattern = /\.(txt|md|markdown|json|jsonl|csv|ts|tsx|js|jsx|mjs|cjs|py|java|go|rs|rb|php|html|htm|xml|css|scss|less|yaml|yml|toml|ini|conf|env|sql|log|sh|bash|zsh)$/i;
+const textFilePattern = /\.(txt|md|markdown|json|jsonl|csv|har|ts|tsx|js|jsx|mjs|cjs|py|java|go|rs|rb|php|html|htm|xml|css|scss|less|yaml|yml|toml|ini|conf|env|sql|log|sh|bash|zsh)$/i;
 
 export const resolveWorkspaceRoot = ({
   config,

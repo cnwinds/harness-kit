@@ -15,12 +15,14 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@harnesskit/protocol": "0.1.0",
     "@harnesskit/core": "0.1.0",
     "@harnesskit/harness": "0.1.0",
+    "@fastify/multipart": "^9.0.0",
     "fastify": "^5.0.0",
     "nanoid": "^5.1.6",
     "zod": "^4.1.12"
@@ -32,5 +34,8 @@
     "@types/node": "^24.0.0",
     "vitest": "^4.0.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }

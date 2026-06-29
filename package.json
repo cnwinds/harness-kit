@@ -11,6 +11,7 @@
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
+    "publish:packages": "node scripts/publish-packages.mjs",
     "dev:demo": "npm --workspace @harnesskit/example-demo run dev",
     "dev:minimal-server": "npm --workspace @harnesskit/example-minimal-server run dev",
     "dev:minimal-react": "npm --workspace @harnesskit/example-minimal-react run dev"

@@ -10,21 +10,26 @@ export const createSessionSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
-export const createMessageSchema = z.object({
-  content: z.string().min(1),
-  attachmentIds: z.array(z.string()).optional(),
-  dispatch: z.enum(DISPATCH_MODES).optional(),
-  turnId: z.string().optional(),
-  kind: z.enum(TURN_KINDS).optional(),
-  turnConfig: z
-    .object({
-      model: z.string().optional(),
-      reasoningEffort: z.enum(['minimal', 'low', 'medium', 'high', 'xhigh']).optional(),
-      maxOutputTokens: z.number().int().positive().optional(),
-      webSearchMode: z.enum(['disabled', 'cached', 'live']).optional(),
-    })
-    .optional(),
-});
+export const createMessageSchema = z
+  .object({
+    content: z.string(),
+    attachmentIds: z.array(z.string()).optional(),
+    dispatch: z.enum(DISPATCH_MODES).optional(),
+    turnId: z.string().optional(),
+    kind: z.enum(TURN_KINDS).optional(),
+    turnConfig: z
+      .object({
+        model: z.string().optional(),
+        reasoningEffort: z.enum(['minimal', 'low', 'medium', 'high', 'xhigh']).optional(),
+        maxOutputTokens: z.number().int().positive().optional(),
+        webSearchMode: z.enum(['disabled', 'cached', 'live']).optional(),
+      })
+      .optional(),
+  })
+  .refine(
+    (input) => input.content.trim().length > 0 || (input.attachmentIds?.length ?? 0) > 0,
+    { message: 'content or attachmentIds is required' },
+  );
 
 export const steerMessageSchema = z.object({
   content: z.string().min(1),

@@ -23,6 +23,7 @@ import {
   resolveCompactionSourceBudgetTokens,
   type ResponsesMessageInput,
 } from './openai-harness-context.js';
+import { formatUserAttachmentReferences } from './attachment-references.js';
 import { buildOpenAIHarnessInstructions } from './openai-harness-prompt.js';
 import { resolveProviderCapabilities } from './provider-capabilities.js';
 import type { ImageGenerationOrchestrator } from './image/image-orchestrator.js';
@@ -113,7 +114,12 @@ const readImageGenerationResult = (value: unknown): string | null => {
   return null;
 };
 
-type ImageServiceLike = Pick<OpenAIImageService, 'buildResponsesInputImages' | 'saveResponsesImageToolResult'>;
+type ImageServiceLike = Pick<
+  OpenAIImageService,
+  'buildResponsesInputImages' | 'saveResponsesImageToolResult'
+> & {
+  partitionAttachments?: OpenAIImageService['partitionAttachments'];
+};
 
 const parseJsonArguments = (raw: unknown) => {
   if (typeof raw === 'string') {
@@ -494,13 +500,32 @@ export class OpenAIHarness {
       };
     }
 
-    const inputImages = await this.openAIImageService.buildResponsesInputImages(userId, normalizedAttachmentIds);
+    const partition = this.openAIImageService.partitionAttachments?.(userId, normalizedAttachmentIds) ?? {
+      imageIds: normalizedAttachmentIds,
+      nonImageFiles: [],
+    };
+    const attachmentNote = formatUserAttachmentReferences(partition.nonImageFiles);
+    const textContent = attachmentNote
+      ? [content.trim(), attachmentNote].filter(Boolean).join('\n\n')
+      : content;
+
+    const inputImages = partition.imageIds.length > 0
+      ? await this.openAIImageService.buildResponsesInputImages(userId, partition.imageIds)
+      : [];
+
+    if (inputImages.length === 0) {
+      return {
+        role: 'user',
+        content: textContent,
+      };
+    }
+
     return {
       role: 'user',
       content: [
         {
           type: 'input_text',
-          text: content,
+          text: textContent,
         },
         ...inputImages,
       ],

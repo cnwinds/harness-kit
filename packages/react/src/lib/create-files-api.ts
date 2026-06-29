@@ -21,5 +21,24 @@ export const createHarnessFilesApi = (args: {
   return {
     fetchFileBlob: (fileId: string) => fetchBlob(`${args.apiBase}/files/${fileId}/download`),
     fetchFilePreviewBlob: (file: FileRecord) => fetchBlob(`${args.apiBase}/files/${file.id}/preview`),
+    uploadFile: async (sessionId: string, file: File) => {
+      const form = new FormData();
+      form.append('file', file, file.name);
+      const response = await fetch(`${args.apiBase}/sessions/${sessionId}/files`, {
+        method: 'POST',
+        credentials: args.credentials ?? 'include',
+        ...args.fetchOptions,
+        body: form,
+        headers: {
+          ...args.fetchOptions?.headers,
+        },
+      });
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || `HTTP ${response.status}`);
+      }
+      const data = await response.json() as { file: FileRecord };
+      return data.file;
+    },
   };
 };

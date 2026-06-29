@@ -16,7 +16,8 @@ interface ImageAttachmentThumbProps {
 }
 
 const ImageAttachmentThumb = ({ file }: ImageAttachmentThumbProps) => {
-  const { previewUrl, loading, error } = useFilePreviewUrl(file, true);
+  const useOriginal = file.mimeType === 'image/svg+xml';
+  const { previewUrl, loading, error } = useFilePreviewUrl(file, true, useOriginal ? 'original' : 'thumbnail');
 
   const handleClick = () => {
     imagePreviewActions.open({

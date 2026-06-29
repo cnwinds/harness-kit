@@ -2,6 +2,8 @@
 
 可运行的全栈对接参考：Fastify 后端 + React 前端，展示 README 里「一行接入」的实际用法。
 
+文档入口：[快速开始](../../docs/QUICKSTART.md) · [API 参考](../../docs/API.md) · [接入指南](../../docs/INTEGRATION.md) · [进阶配置](../../docs/ADVANCED.md)
+
 ## 前置条件
 
 - Node.js >= 22
@@ -75,9 +77,11 @@ export function App() {
 }
 ```
 
-Headless 模式用 `useHarnessChat()` 完全自定义 UI，见 [INTEGRATION.md](../../docs/INTEGRATION.md)。
+Headless 模式用 `useHarnessChat()` 完全自定义 UI，见 [INTEGRATION.md — Headless](../../docs/INTEGRATION.md#headless-模式)。
 
 ## API 契约（React 客户端依赖）
+
+完整说明见 [docs/API.md](../../docs/API.md)。
 
 | 方法 | 路径 | 响应 |
 |------|------|------|
@@ -87,6 +91,28 @@ Headless 模式用 `useHarnessChat()` 完全自定义 UI，见 [INTEGRATION.md](
 | POST | `/sessions/:id/messages` | `MessageDispatchResponse` |
 | GET | `/sessions/:id/runtime` | `{ runtime }` |
 | GET | `/sessions/:id/stream` | SSE |
+
+## 进阶能力配置（联网搜索 / 生图）
+
+HarnessKit 支持在聊天模型之外独立配置 **联网搜索** 与 **图片生成**。Demo 通过 `examples/minimal-server/.env` 注入，SkillChat 可在管理后台 **设置 → 系统** 中在线修改。
+
+| 能力 | 关键变量 | 说明 |
+|------|----------|------|
+| 联网搜索 | `WEB_SEARCH_MODE` | `live` / `cached` / `disabled` |
+| | `OPENAI_NATIVE_WEB_SEARCH` | `auto` / `on` / `off`；Native 复用 `OPENAI_API_KEY` |
+| | `TAVILY_API_KEY` 等 | 三方 Provider，有 Key 即激活 |
+| | `WEB_SEARCH_PROVIDERS` | 可选优先级，如 `openai_native,tavily,serper,brave` |
+| 图片生成 | `OPENAI_NATIVE_IMAGE_GENERATION` | Native 走 Responses 内置 `image_generation` |
+| | `OPENAI_IMAGE_*` / `ZHIPU_IMAGE_*` / `DASHSCOPE_IMAGE_*` | 三方生图通道 |
+| | `IMAGE_PROVIDERS` | 可选优先级，如 `openai_images,zhipu,bailian` |
+
+**推荐起步：**
+
+1. 仅官方 OpenAI：保持 Native `auto`，填写 `OPENAI_API_KEY` 指向 `api.openai.com`。
+2. 中转站聊天 + 官方生图：`OPENAI_NATIVE_IMAGE_GENERATION=off`，另填 `OPENAI_IMAGE_API_KEY` 直连生图 API。
+3. 国内模型：聊天走 DashScope 兼容端点，生图填 `DASHSCOPE_IMAGE_API_KEY` + `wan2.1-t2i-turbo`。
+
+完整说明见 [ADVANCED.md](../../docs/ADVANCED.md)。SkillChat 部署后可在管理后台折叠面板中逐项配置，无需重启。
 
 ## 本地数据
 

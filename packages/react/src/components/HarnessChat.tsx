@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { FileRecord, SessionRuntimeSnapshot, SessionSummary, StoredEvent } from '@harnesskit/protocol';
 import { useHarnessChatContext } from '../provider.js';
+import { useComposerFileUpload } from '../hooks/useComposerFileUpload.js';
 import { useSessionStream } from '../hooks/useSessionStream.js';
 import { useAutoScrollToBottom } from '../hooks/useAutoScrollToBottom.js';
 import { buildRenderableTimeline } from '../lib/timeline.js';
@@ -93,6 +94,42 @@ export const HarnessChat = ({
     [stream.pendingText, timeline],
   );
 
+  const ensureSessionId = useCallback(async () => {
+    if (sessionId) {
+      return sessionId;
+    }
+
+    const created = await apiFetch('/sessions', {
+      method: 'POST',
+      body: JSON.stringify({ title: '新会话' }),
+    }) as { session: SessionSummary };
+    if (controlledSessionId === undefined) {
+      setInternalSessionId(created.session.id);
+    }
+    return created.session.id;
+  }, [apiFetch, controlledSessionId, sessionId]);
+
+  const {
+    attachments,
+    uploadFiles,
+    removeAttachment,
+    clearAttachments,
+    uploadedAttachmentIds,
+    hasUploadingAttachments,
+    hasAttachments,
+  } = useComposerFileUpload({
+    sessionId,
+    filesApi: filesApi!,
+    ensureSessionId,
+    disabled: sendPending || interruptPending,
+  });
+
+  const handleSelectFiles = useCallback((files: File[]) => {
+    void uploadFiles(files).catch((error) => {
+      setPageError(error instanceof Error ? error.message : '图片上传失败');
+    });
+  }, [uploadFiles]);
+
   const messageListRef = useAutoScrollToBottom<HTMLDivElement>([
     timeline,
     thinkingEvent,
@@ -100,35 +137,39 @@ export const HarnessChat = ({
     stream.reasoningSummary,
     pageError,
     sessionId,
+    attachments,
   ]);
 
   const handleSend = useCallback(async () => {
     const content = draft.trim();
-    if (!content || sendPending || interruptPending) {
+    const attachmentIds = uploadedAttachmentIds;
+    if (
+      (!content && attachmentIds.length === 0)
+      || sendPending
+      || interruptPending
+      || hasUploadingAttachments
+    ) {
       return;
     }
 
     setSendPending(true);
     setPageError(null);
+    const previousDraft = draft;
     setDraft('');
 
     try {
-      let activeId = sessionId;
-      if (!activeId) {
-        const created = await apiFetch('/sessions', {
-          method: 'POST',
-          body: JSON.stringify({ title: content.slice(0, 40) }),
-        }) as { session: SessionSummary };
-        activeId = created.session.id;
-        if (controlledSessionId === undefined) {
-          setInternalSessionId(activeId);
-        }
-      }
+      const activeId = await ensureSessionId();
 
       await apiFetch(`/sessions/${activeId}/messages`, {
         method: 'POST',
-        body: JSON.stringify({ content, dispatch: 'new_turn' }),
+        body: JSON.stringify({
+          content,
+          dispatch: 'new_turn',
+          attachmentIds: attachmentIds.length > 0 ? attachmentIds : undefined,
+        }),
       });
+
+      clearAttachments(activeId);
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['messages', activeId] }),
@@ -136,19 +177,21 @@ export const HarnessChat = ({
         queryClient.invalidateQueries({ queryKey: ['sessions'] }),
       ]);
     } catch (error) {
-      setDraft(content);
+      setDraft(previousDraft);
       setPageError(error instanceof Error ? error.message : '发送失败');
     } finally {
       setSendPending(false);
     }
   }, [
     apiFetch,
-    controlledSessionId,
+    clearAttachments,
     draft,
+    ensureSessionId,
+    hasUploadingAttachments,
     interruptPending,
     queryClient,
     sendPending,
-    sessionId,
+    uploadedAttachmentIds,
   ]);
 
   const handleInterrupt = useCallback(async () => {
@@ -277,8 +320,11 @@ export const HarnessChat = ({
             value={draft}
             onValueChange={setDraft}
             onSend={() => void handleSend()}
-            attachments={[]}
-            onSelectFiles={() => undefined}
+            attachments={attachments}
+            onRemoveAttachment={removeAttachment}
+            onSelectFiles={handleSelectFiles}
+            hasAttachments={hasAttachments}
+            hasUploadingAttachments={hasUploadingAttachments}
             isTurnRunning={turnRunning}
             onInterrupt={() => void handleInterrupt()}
             interruptPending={interruptPending}

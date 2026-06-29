@@ -348,6 +348,7 @@ const ImageEventCard = ({
   const { previewUrl, loading, error } = useFilePreviewUrl(
     event.file,
     event.file.mimeType?.startsWith('image/') === true,
+    event.file.mimeType === 'image/svg+xml' ? 'original' : 'thumbnail',
   );
 
   const openLightbox = () => {
@@ -1089,6 +1090,15 @@ export const MessageItem = ({
   }
 
   if (event.kind === 'file') {
+    if (event.file.mimeType?.startsWith('image/')) {
+      return (
+        <MessageAttachments
+          attachments={[event.file]}
+          onDownload={onDownload}
+        />
+      );
+    }
+
     return (
       <article className="flex items-start justify-between gap-2 rounded-md border border-border bg-surface px-3 py-2">
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -1122,11 +1132,11 @@ export const MessageItem = ({
   }
 
   return (
-    <article className="flex items-start gap-2 rounded-md border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
+    <article className="flex min-w-0 items-start gap-2 rounded-md border border-danger/40 bg-danger/5 p-3 text-sm text-danger">
       <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-      <div className="flex flex-col gap-0.5">
+      <div className="flex min-w-0 flex-col gap-0.5">
         <div className="text-2xs uppercase tracking-wide">错误</div>
-        <div>{event.message}</div>
+        <div className="break-words [overflow-wrap:anywhere]">{event.message}</div>
       </div>
     </article>
   );

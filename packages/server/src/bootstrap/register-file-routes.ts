@@ -4,6 +4,8 @@ import type { ChatUser } from '@harnesskit/protocol';
 import type { HarnessConfig } from '@harnesskit/core';
 import { hydrateFileRecordById } from './hydrate-file-records.js';
 import type { LocalFileService } from './local-file-service.js';
+import type { LocalSessionStore } from './local-session-store.js';
+import { normalizeUploadMimeType, validateComposerUpload } from './upload-policy.js';
 
 const encodeContentDisposition = (fileName: string, disposition: 'inline' | 'attachment') => {
   const encoded = encodeURIComponent(fileName);
@@ -50,6 +52,7 @@ export const registerFileRoutes = (args: {
   prefix: string;
   config: HarnessConfig;
   fileService: LocalFileService;
+  sessionStore: LocalSessionStore;
   resolveUser: (request: FastifyRequest) => Promise<ChatUser | null>;
 }) => {
   const handleFileRequest = async (
@@ -89,4 +92,38 @@ export const registerFileRoutes = (args: {
   args.app.get(`${args.prefix}/files/:fileId/download`, async (request, reply) => (
     handleFileRequest(request, reply, 'attachment')
   ));
+
+  args.app.post(`${args.prefix}/sessions/:sessionId/files`, async (request, reply) => {
+    const user = await args.resolveUser(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const { sessionId } = request.params as { sessionId: string };
+    args.sessionStore.requireOwned(user.id, sessionId);
+
+    const data = await request.file();
+    if (!data) {
+      return reply.code(400).send({ error: '未上传文件' });
+    }
+
+    const validation = validateComposerUpload(data.filename);
+    if (!validation.ok) {
+      return reply.code(400).send({ error: validation.error });
+    }
+
+    const mimetype = normalizeUploadMimeType(validation.filename, data.mimetype);
+
+    try {
+      const file = await args.fileService.saveUpload(user.id, sessionId, {
+        filename: validation.filename,
+        mimetype,
+        toBuffer: () => data.toBuffer(),
+      });
+      return reply.code(201).send({ file });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '文件上传失败';
+      return reply.code(400).send({ error: message });
+    }
+  });
 };

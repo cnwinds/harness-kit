@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
+import multipart from '@fastify/multipart';
 import type { ChatUser } from '@harnesskit/protocol';
 import { MessageStore, StreamHub } from '@harnesskit/core';
 import { createHarnessChat } from '../create-harness-chat.js';
@@ -38,6 +39,12 @@ export const createHarnessChatBootstrap = (options: HarnessChatBootstrapOptions)
 
   const mount = async (app: FastifyInstance, mountOpts: MountOptions = {}) => {
     const prefix = mountOpts.prefix ?? '/api/chat';
+    await app.register(multipart, {
+      limits: {
+        fileSize: 20 * 1024 * 1024,
+        files: 1,
+      },
+    });
     await chat.mount(app, mountOpts);
 
     registerFileRoutes({
@@ -45,6 +52,7 @@ export const createHarnessChatBootstrap = (options: HarnessChatBootstrapOptions)
       prefix,
       config,
       fileService,
+      sessionStore,
       resolveUser,
     });
 

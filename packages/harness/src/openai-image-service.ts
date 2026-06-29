@@ -86,15 +86,42 @@ export class OpenAIImageService {
 
   async resolveImageInputs(userId: string, fileIds: string[]): Promise<ImageInputFile[]> {
     const uniqueIds = [...new Set(fileIds)];
-    return await Promise.all(uniqueIds.map(async (fileId) => {
+    const results: ImageInputFile[] = [];
+
+    for (const fileId of uniqueIds) {
       const { file, absolutePath } = await this.fileService.resolveDownloadPath(userId, fileId);
-      return {
+      if (!file.mimeType?.startsWith('image/')) {
+        continue;
+      }
+      results.push({
         fileId: file.id,
         displayName: file.displayName,
         mimeType: ensureImageMimeType(file),
         absolutePath,
-      };
-    }));
+      });
+    }
+
+    return results;
+  }
+
+  partitionAttachments(userId: string, fileIds: string[]) {
+    const imageIds: string[] = [];
+    const nonImageFiles: FileRecord[] = [];
+
+    for (const fileId of [...new Set(fileIds)]) {
+      try {
+        const file = this.fileService.getById(userId, fileId);
+        if (file.mimeType?.startsWith('image/')) {
+          imageIds.push(fileId);
+        } else {
+          nonImageFiles.push(file);
+        }
+      } catch {
+        // Skip missing attachments.
+      }
+    }
+
+    return { imageIds, nonImageFiles };
   }
 
   async buildResponsesInputImages(userId: string, fileIds: string[]): Promise<ResponsesInputImagePart[]> {

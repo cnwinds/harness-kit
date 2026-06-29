@@ -2,49 +2,82 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { SessionRuntimeSnapshot } from '@harnesskit/protocol';
 import { useStreamUiStore } from './stream-ui-store.js';
 
-const snapshot: SessionRuntimeSnapshot = {
-  sessionId: 's1',
+const idleSnapshot = (sessionId: string): SessionRuntimeSnapshot => ({
+  sessionId,
+  activeTurn: null,
+  followUpQueue: [],
+  recovery: null,
+});
+
+const runningSnapshot = (sessionId: string): SessionRuntimeSnapshot => ({
+  sessionId,
   activeTurn: {
     turnId: 'turn_1',
     kind: 'regular',
     status: 'running',
-    phase: 'model',
-    phaseStartedAt: '2026-04-13T10:00:00.000Z',
-    startedAt: '2026-04-13T10:00:00.000Z',
+    phase: 'sampling',
+    phaseStartedAt: '2026-04-12T00:00:30.000Z',
     canSteer: true,
-    round: 1,
+    startedAt: '2026-04-12T00:00:00.000Z',
+    round: 2,
   },
-  followUpQueue: [{
-    inputId: 'input_1',
-    content: 'queued follow-up',
-    createdAt: '2026-04-13T10:00:01.000Z',
-  }],
+  followUpQueue: [],
   recovery: null,
-};
+});
 
-describe('useStreamUiStore', () => {
+describe('useStreamUiStore hydration', () => {
   beforeEach(() => {
     useStreamUiStore.setState({ streams: {} });
   });
 
-  it('hydrates runtime snapshot into session stream state', () => {
-    useStreamUiStore.getState().hydrateRuntime('s1', snapshot);
+  it('ignores a stale idle runtime snapshot while a turn is still active locally', () => {
+    useStreamUiStore.getState().hydrateRuntime('s1', runningSnapshot('s1'));
+    useStreamUiStore.getState().appendTextDelta('s1', 'partial reply');
+
+    useStreamUiStore.getState().hydrateRuntime('s1', idleSnapshot('s1'));
 
     const stream = useStreamUiStore.getState().streams.s1;
     expect(stream?.activeTurnId).toBe('turn_1');
-    expect(stream?.activeTurnCanSteer).toBe(true);
-    expect(stream?.followUpQueue).toHaveLength(1);
-    expect(stream?.followUpQueue[0]?.content).toBe('queued follow-up');
+    expect(stream?.activeTurnPhase).toBe('sampling');
+    expect(stream?.pendingText).toBe('partial reply');
   });
 
-  it('accumulates pending text deltas and clears on reset', () => {
-    useStreamUiStore.getState().appendTextDelta('s1', 'Hello');
-    useStreamUiStore.getState().appendTextDelta('s1', ' world');
+  it('restores active turn fields from a running runtime snapshot', () => {
+    useStreamUiStore.getState().hydrateRuntime('s1', runningSnapshot('s1'));
 
-    expect(useStreamUiStore.getState().streams.s1?.pendingText).toBe('Hello world');
+    const stream = useStreamUiStore.getState().streams.s1;
+    expect(stream?.activeTurnId).toBe('turn_1');
+    expect(stream?.activeTurnRound).toBe(2);
+    expect(stream?.activeTurnCanSteer).toBe(true);
+  });
 
-    useStreamUiStore.getState().resetStream('s1');
-    expect(useStreamUiStore.getState().streams.s1?.pendingText).toBe('');
-    expect(useStreamUiStore.getState().streams.s1?.status).toBe('idle');
+  it('preserves pending text when a stale idle runtime snapshot arrives with only pending text', () => {
+    useStreamUiStore.getState().appendTextDelta('s1', 'orphaned pending');
+    useStreamUiStore.getState().hydrateRuntime('s1', idleSnapshot('s1'));
+
+    const stream = useStreamUiStore.getState().streams.s1;
+    expect(stream?.pendingText).toBe('orphaned pending');
+    expect(stream?.activeTurnId).toBeNull();
+  });
+
+  it('records completed turn status on turn_completed', () => {
+    useStreamUiStore.getState().hydrateRuntime('s1', runningSnapshot('s1'));
+
+    useStreamUiStore.getState().applyTurnCompleted('s1', {
+      turnId: 'turn_1',
+      kind: 'regular',
+      status: 'completed',
+    });
+
+    const stream = useStreamUiStore.getState().streams.s1;
+    expect(stream?.activeTurnId).toBeNull();
+    expect(stream?.activeTurnStatus).toBe('completed');
+  });
+
+  it('clears active turn fields on clearActiveTurn', () => {
+    useStreamUiStore.getState().hydrateRuntime('s1', runningSnapshot('s1'));
+    useStreamUiStore.getState().clearActiveTurn('s1');
+
+    expect(useStreamUiStore.getState().streams.s1?.activeTurnId).toBeNull();
   });
 });

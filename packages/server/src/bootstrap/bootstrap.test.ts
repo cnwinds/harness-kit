@@ -102,4 +102,98 @@ describe('createHarnessChatBootstrap', () => {
 
     await app.close();
   });
+
+  it('uploads image files for a session', async () => {
+    const dataRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'hk-bootstrap-upload-'));
+    tempDirs.push(dataRoot);
+
+    const app = Fastify();
+    const chat = createHarnessChatBootstrap({
+      llm: { apiKey: 'test-token' },
+      dataRoot,
+      nodeEnv: 'test',
+      inlineJobs: true,
+    });
+    await chat.mount(app, { prefix: '/api/chat' });
+
+    const createRes = await app.inject({
+      method: 'POST',
+      url: '/api/chat/sessions',
+      payload: { title: 'upload' },
+    });
+    const { session } = createRes.json() as { session: { id: string } };
+
+    const boundary = '----harnesskit-test-boundary';
+    const payload = [
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="file"; filename="paste.png"',
+      'Content-Type: image/png',
+      '',
+      'fake-png-bytes',
+      `--${boundary}--`,
+      '',
+    ].join('\r\n');
+
+    const uploadRes = await app.inject({
+      method: 'POST',
+      url: `/api/chat/sessions/${session.id}/files`,
+      headers: {
+        'content-type': `multipart/form-data; boundary=${boundary}`,
+      },
+      payload,
+    });
+    expect(uploadRes.statusCode).toBe(201);
+    const { file } = uploadRes.json() as { file: { id: string; mimeType: string } };
+    expect(file.id).toMatch(/^file_/);
+    expect(file.mimeType).toBe('image/png');
+
+    await app.close();
+  });
+
+  it('uploads non-image files for a session', async () => {
+    const dataRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'hk-bootstrap-upload-csv-'));
+    tempDirs.push(dataRoot);
+
+    const app = Fastify();
+    const chat = createHarnessChatBootstrap({
+      llm: { apiKey: 'test-token' },
+      dataRoot,
+      nodeEnv: 'test',
+      inlineJobs: true,
+    });
+    await chat.mount(app, { prefix: '/api/chat' });
+
+    const createRes = await app.inject({
+      method: 'POST',
+      url: '/api/chat/sessions',
+      payload: { title: 'csv' },
+    });
+    const { session } = createRes.json() as { session: { id: string } };
+
+    const boundary = '----harnesskit-test-boundary-csv';
+    const payload = [
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="file"; filename="data.csv"',
+      'Content-Type: application/octet-stream',
+      '',
+      'a,b\n1,2',
+      `--${boundary}--`,
+      '',
+    ].join('\r\n');
+
+    const uploadRes = await app.inject({
+      method: 'POST',
+      url: `/api/chat/sessions/${session.id}/files`,
+      headers: {
+        'content-type': `multipart/form-data; boundary=${boundary}`,
+      },
+      payload,
+    });
+    expect(uploadRes.statusCode).toBe(201);
+    const { file } = uploadRes.json() as { file: { mimeType: string; displayName: string } };
+    expect(file.displayName).toBe('data.csv');
+    expect(file.mimeType).toBe('text/csv');
+
+    await app.close();
+  });
 });

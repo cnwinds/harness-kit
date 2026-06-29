@@ -376,11 +376,6 @@ export const QuestionTimelineControl = ({
       role="navigation"
       aria-label={`\u63d0\u95ee\u5b9a\u4f4d\uff0c\u5171 ${questions.length} \u4e2a\u63d0\u95ee`}
       className="question-timeline-control absolute right-2 top-1/2 z-30 -translate-y-1/2 lg:right-5"
-      onMouseEnter={() => {
-        if (isDesktop) {
-          setOpen(true);
-        }
-      }}
       onMouseLeave={() => {
         if (isDesktop) {
           setOpen(false);
@@ -398,12 +393,12 @@ export const QuestionTimelineControl = ({
         aria-label={`\u95ee\u9898\u5b9a\u4f4d\u5217\u8868\uff0c\u5171 ${questions.length} \u4e2a\u63d0\u95ee`}
         data-state={open ? 'open' : 'collapsed'}
         className={cn(
-          'relative flex flex-col overflow-hidden rounded-[14px] border py-1 backdrop-blur transition-[width,background-color,border-color,box-shadow] motion-reduce:transition-none',
+          'relative flex flex-col overflow-hidden rounded-[14px] border py-1 transition-[width,border-color,box-shadow] motion-reduce:transition-none',
           DURATION,
           EASING,
           open
-            ? 'border-border bg-surface/95 shadow-xl'
-            : 'border-transparent bg-transparent shadow-none',
+            ? 'pointer-events-auto border-border bg-surface shadow-xl'
+            : 'pointer-events-none border-transparent bg-transparent shadow-none backdrop-blur-none',
           open ? PANEL_WIDTH : COLLAPSED_WIDTH,
         )}
         style={{ height: controlVisibleHeightPx }}
@@ -434,11 +429,16 @@ export const QuestionTimelineControl = ({
                 aria-current={isCurrent ? 'true' : undefined}
                 aria-label={`\u5b9a\u4f4d\u5230\u7b2c ${question.index} \u4e2a\u63d0\u95ee\uff1a${question.label}`}
                 onPointerDown={(event) => handleQuestionPointerDown(event, question.id)}
+                onMouseEnter={() => {
+                  if (isDesktop) {
+                    setOpen(true);
+                  }
+                }}
                 onClick={() => handleQuestionClick(question.id)}
                 className={cn(
                   'group/question grid h-9 w-full touch-none select-none items-center rounded-md text-left transition-[background-color,padding,gap] motion-reduce:transition-none',
                   QUESTION_ROW_COLUMNS,
-                  open ? 'gap-3 pl-4 pr-1' : 'gap-0 pl-0 pr-0',
+                  open ? 'gap-3 pl-4 pr-1' : 'pointer-events-auto gap-0 pl-0 pr-0',
                   open &&
                     'hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent',
                   !open && 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',

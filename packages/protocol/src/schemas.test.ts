@@ -12,9 +12,13 @@ describe('protocol schemas', () => {
     expect(createSessionSchema.parse({ title: 'Hello' })).toMatchObject({ title: 'Hello' });
   });
 
-  it('rejects empty create message content', () => {
+  it('validates create message content and attachments', () => {
     expect(() => createMessageSchema.parse({ content: '' })).toThrow();
     expect(createMessageSchema.parse({ content: 'hi' })).toMatchObject({ content: 'hi' });
+    expect(createMessageSchema.parse({
+      content: '',
+      attachmentIds: ['file_abc'],
+    })).toMatchObject({ attachmentIds: ['file_abc'] });
   });
 
   it('parses steer message and list query bounds', () => {

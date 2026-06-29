@@ -2,6 +2,7 @@ import type { ChangeEvent, ClipboardEvent, KeyboardEvent } from 'react';
 import { forwardRef, useEffect, useRef } from 'react';
 import { ArrowUp, Paperclip, Square } from 'lucide-react';
 import type { ComposerAttachment } from '../../hooks/useComposerAttachments.js';
+import { extractClipboardImageFiles } from '../../lib/composer-clipboard.js';
 import { cn } from '../../lib/cn.js';
 import { AttachmentChips } from './AttachmentChips';
 
@@ -19,6 +20,7 @@ export interface ComposerProps {
   sendPending?: boolean;
   disabled?: boolean;
   hasUploadingAttachments?: boolean;
+  hasAttachments?: boolean;
   placeholder?: string;
   bottomInsetPx?: number;
 }
@@ -41,6 +43,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       sendPending = false,
       disabled = false,
       hasUploadingAttachments = false,
+      hasAttachments = false,
       placeholder,
       bottomInsetPx = 0,
     },
@@ -70,7 +73,21 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     }, [value]);
 
     const sendDisabled =
-      disabled || !value.trim() || hasUploadingAttachments || sendPending || interruptPending;
+      disabled
+      || (!value.trim() && !hasAttachments)
+      || hasUploadingAttachments
+      || sendPending
+      || interruptPending;
+
+    const handlePaste = (event: ClipboardEvent<HTMLTextAreaElement>) => {
+      const files = extractClipboardImageFiles(event);
+      if (files.length > 0) {
+        event.preventDefault();
+        onSelectFiles(files);
+        return;
+      }
+      onPaste?.(event);
+    };
 
     const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
       if (event.key === 'Enter' && !event.shiftKey) {
@@ -105,7 +122,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               ref={setRefs}
               value={value}
               onChange={(event) => onValueChange(event.target.value)}
-              onPaste={onPaste}
+              onPaste={handlePaste}
               placeholder={placeholder ?? '给 SkillChat 发送消息'}
               rows={1}
               className="block w-full resize-none border-0 bg-transparent text-base text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-0"
@@ -159,6 +176,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               type="file"
               hidden
               multiple
+              accept="image/*,.csv,.zip,.har,.json,.jsonl,.txt,.md,.pdf,.xml,.yaml,.yml,.log,.xlsx,.docx"
               onChange={handleFileChange}
             />
           </div>
